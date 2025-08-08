@@ -19,25 +19,18 @@ A comprehensive data pipeline framework for large-scale dataset analysis and pro
 
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/data-pipeline-framework.git
-cd data-pipeline
+git clone https://github.com/[yourusername]/data-pipeline-framework.git
+cd data-pipeline-framework
 
 # Create virtual environment
-python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
+python3.12 -m venv venv # opt for python version 3.12 for full CLI functionality
+source venv/bin/activate  # Windows equivalent: venv\Scripts\activate
 
-# Install the package
-pip install -e .
-```
-
-### Development Install
-
-```bash
 # Install with all optional dependencies
 pip install -e ".[all]"
 
 # Or install specific feature sets
-pip install -e ".[dev,spark]"
+pip install -e ".[dev, spark]"
 ```
 
 ## 🚀 Quick Start
