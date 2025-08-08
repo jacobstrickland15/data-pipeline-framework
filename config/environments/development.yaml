@@ -13,7 +13,11 @@ logging:
 database:
   host: localhost
   port: 5432
-  database: data_warehouse_dev
+  database: myapp_db
+  username: jacob
+  password: ""
+  pool_size: 10
+  max_overflow: 20
   echo: true
 
 storage:

@@ -494,6 +494,171 @@ def process(queue_db: str, config: Optional[str], max_items: Optional[int], verb
         sys.exit(1)
 
 
+@main.command()
+@click.option('--host', default='127.0.0.1', help='Host to bind to')
+@click.option('--port', default=8080, help='Port to bind to')
+@click.option('--debug', is_flag=True, help='Enable debug mode')
+def web(host: str, port: int, debug: bool):
+    """Start the web interface."""
+    try:
+        from data_pipeline.web.app import start_web_app
+        
+        click.echo(f"Starting web interface at http://{host}:{port}")
+        click.echo("Press Ctrl+C to stop")
+        
+        start_web_app(host, port, debug)
+        
+    except ImportError:
+        click.echo("Web interface dependencies not installed.", err=True)
+        click.echo("Install with: pip install 'data-pipeline[web]'", err=True)
+        sys.exit(1)
+    except KeyboardInterrupt:
+        click.echo("\nShutting down web interface...")
+    except Exception as e:
+        click.echo(f"Error starting web interface: {str(e)}", err=True)
+        sys.exit(1)
+
+
+@main.command()
+@click.option('--host', default='127.0.0.1', help='Host to bind to')
+@click.option('--port', default=8050, help='Port to bind to')
+@click.option('--debug', is_flag=True, help='Enable debug mode')
+def dashboard(host: str, port: int, debug: bool):
+    """Start the monitoring dashboard."""
+    try:
+        from data_pipeline.observability.dashboard import start_dashboard
+        
+        click.echo(f"Starting monitoring dashboard at http://{host}:{port}")
+        click.echo("Press Ctrl+C to stop")
+        
+        start_dashboard(host, port, debug)
+        
+    except ImportError:
+        click.echo("Dashboard dependencies not installed.", err=True)
+        click.echo("Install with: pip install 'data-pipeline[monitoring]'", err=True)
+        sys.exit(1)
+    except KeyboardInterrupt:
+        click.echo("\nShutting down dashboard...")
+    except Exception as e:
+        click.echo(f"Error starting dashboard: {str(e)}", err=True)
+        sys.exit(1)
+
+
+@main.group()
+def metrics():
+    """Manage metrics and monitoring."""
+    pass
+
+
+@metrics.command()
+@click.option('--window', default='1h', help='Time window for metrics')
+@click.option('--format', 'output_format', type=click.Choice(['json', 'prometheus']), default='json')
+def show(window: str, output_format: str):
+    """Show current metrics."""
+    try:
+        from data_pipeline.observability.metrics import get_metrics_collector
+        
+        collector = get_metrics_collector()
+        
+        if output_format == 'json':
+            metrics_json = collector.export_metrics('json')
+            click.echo(metrics_json)
+        else:
+            metrics_prom = collector.export_metrics('prometheus')
+            click.echo(metrics_prom)
+            
+    except Exception as e:
+        click.echo(f"Error getting metrics: {str(e)}", err=True)
+        sys.exit(1)
+
+
+@metrics.command()
+def health():
+    """Check system health."""
+    try:
+        from data_pipeline.observability.metrics import get_health_checker
+        
+        health_checker = get_health_checker()
+        results = health_checker.run_checks()
+        
+        click.echo("=== Health Check Results ===")
+        click.echo(f"Overall Status: {'✅ Healthy' if results['overall_healthy'] else '❌ Unhealthy'}")
+        
+        if results.get('checks'):
+            click.echo("\nIndividual Checks:")
+            for check_name, check_result in results['checks'].items():
+                status = "✅" if check_result.get('healthy') else "❌"
+                duration = check_result.get('duration_ms', 0)
+                click.echo(f"  {status} {check_name}: {duration:.1f}ms")
+                
+                if not check_result.get('healthy') and 'error' in check_result:
+                    click.echo(f"     Error: {check_result['error']}")
+        
+    except Exception as e:
+        click.echo(f"Error checking health: {str(e)}", err=True)
+        sys.exit(1)
+
+
+@main.group()
+def alerts():
+    """Manage alerts and notifications."""
+    pass
+
+
+@alerts.command()
+def list():
+    """List active alerts."""
+    try:
+        from data_pipeline.observability.metrics import get_alert_manager
+        
+        alert_manager = get_alert_manager()
+        active_alerts = alert_manager.get_active_alerts()
+        
+        if not active_alerts:
+            click.echo("No active alerts")
+            return
+        
+        click.echo("=== Active Alerts ===")
+        for alert in active_alerts:
+            level_icon = {"info": "ℹ️", "warning": "⚠️", "critical": "🚨", "emergency": "🔥"}.get(alert.level.value, "❓")
+            click.echo(f"{level_icon} {alert.name}")
+            click.echo(f"   {alert.message}")
+            click.echo(f"   Time: {alert.timestamp.strftime('%Y-%m-%d %H:%M:%S')}")
+            click.echo()
+        
+    except Exception as e:
+        click.echo(f"Error listing alerts: {str(e)}", err=True)
+        sys.exit(1)
+
+
+@alerts.command()
+@click.option('--hours', default=24, help='Hours of alert history to show')
+def history(hours: int):
+    """Show alert history."""
+    try:
+        from data_pipeline.observability.metrics import get_alert_manager
+        
+        alert_manager = get_alert_manager()
+        alert_history = alert_manager.get_alert_history(hours=hours)
+        
+        if not alert_history:
+            click.echo(f"No alerts in the last {hours} hours")
+            return
+        
+        click.echo(f"=== Alert History (Last {hours} hours) ===")
+        for alert in alert_history[-20:]:  # Show last 20
+            level_icon = {"info": "ℹ️", "warning": "⚠️", "critical": "🚨", "emergency": "🔥"}.get(alert.level.value, "❓")
+            status = "✅ Resolved" if alert.resolved else "🔴 Active"
+            click.echo(f"{level_icon} {alert.name} [{status}]")
+            click.echo(f"   {alert.message}")
+            click.echo(f"   Time: {alert.timestamp.strftime('%Y-%m-%d %H:%M:%S')}")
+            click.echo()
+        
+    except Exception as e:
+        click.echo(f"Error getting alert history: {str(e)}", err=True)
+        sys.exit(1)
+
+
 @main.group()
 def generate():
     """Generate analysis code templates for database exploration."""

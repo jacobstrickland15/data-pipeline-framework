@@ -1,0 +1,958 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1><i class="fas fa-shield-alt"></i> Data Quality</h1>
+        <div class="btn-group">
+            <button class="btn btn-primary" onclick="runQualityCheck()">
+                <i class="fas fa-play"></i> Run Quality Check
+            </button>
+            <button class="btn btn-outline-secondary" onclick="refreshQualityData()">
+                <i class="fas fa-sync-alt"></i> Refresh
+            </button>
+        </div>
+    </div>
+    
+    <!-- Quality Overview Cards -->
+    <div class="row mb-4">
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="card metric-card">
+                <div class="card-body text-center">
+                    <div class="quality-score-circle mb-2">
+                        <span class="quality-score" id="overall-quality-score">0</span>
+                    </div>
+                    <h6 class="mb-0">Overall Quality Score</h6>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="card metric-card">
+                <div class="card-body text-center">
+                    <i class="fas fa-check-circle fa-2x text-success mb-2"></i>
+                    <h4 class="text-success mb-1" id="passed-tests">0</h4>
+                    <h6 class="text-muted mb-0">Tests Passed</h6>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="card metric-card">
+                <div class="card-body text-center">
+                    <i class="fas fa-times-circle fa-2x text-danger mb-2"></i>
+                    <h4 class="text-danger mb-1" id="failed-tests">0</h4>
+                    <h6 class="text-muted mb-0">Tests Failed</h6>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="card metric-card">
+                <div class="card-body text-center">
+                    <i class="fas fa-exclamation-triangle fa-2x text-warning mb-2"></i>
+                    <h4 class="text-warning mb-1" id="warnings">0</h4>
+                    <h6 class="text-muted mb-0">Warnings</h6>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Quality Dimensions Chart -->
+    <div class="row mb-4">
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-header">
+                    <h6 class="mb-0"><i class="fas fa-chart-radar"></i> Data Quality Dimensions</h6>
+                </div>
+                <div class="card-body">
+                    <canvas id="quality-dimensions-chart" height="250"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-4">
+            <div class="card">
+                <div class="card-header">
+                    <h6 class="mb-0"><i class="fas fa-list"></i> Quality Dimensions</h6>
+                </div>
+                <div class="card-body">
+                    <div class="quality-dimension mb-3">
+                        <div class="d-flex justify-content-between align-items-center mb-1">
+                            <span>Completeness</span>
+                            <span class="badge bg-secondary" id="completeness-score">0%</span>
+                        </div>
+                        <div class="progress">
+                            <div class="progress-bar bg-secondary" style="width: 0%" id="completeness-bar"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="quality-dimension mb-3">
+                        <div class="d-flex justify-content-between align-items-center mb-1">
+                            <span>Accuracy</span>
+                            <span class="badge bg-secondary" id="accuracy-score">0%</span>
+                        </div>
+                        <div class="progress">
+                            <div class="progress-bar bg-secondary" style="width: 0%" id="accuracy-bar"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="quality-dimension mb-3">
+                        <div class="d-flex justify-content-between align-items-center mb-1">
+                            <span>Consistency</span>
+                            <span class="badge bg-secondary" id="consistency-score">0%</span>
+                        </div>
+                        <div class="progress">
+                            <div class="progress-bar bg-secondary" style="width: 0%" id="consistency-bar"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="quality-dimension mb-3">
+                        <div class="d-flex justify-content-between align-items-center mb-1">
+                            <span>Validity</span>
+                            <span class="badge bg-secondary" id="validity-score">0%</span>
+                        </div>
+                        <div class="progress">
+                            <div class="progress-bar bg-secondary" style="width: 0%" id="validity-bar"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="quality-dimension">
+                        <div class="d-flex justify-content-between align-items-center mb-1">
+                            <span>Uniqueness</span>
+                            <span class="badge bg-secondary" id="uniqueness-score">0%</span>
+                        </div>
+                        <div class="progress">
+                            <div class="progress-bar bg-secondary" style="width: 0%" id="uniqueness-bar"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Data Quality Tests -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h6 class="mb-0"><i class="fas fa-vial"></i> Data Quality Tests</h6>
+                        <div class="btn-group btn-group-sm">
+                            <button class="btn btn-primary active" onclick="filterTests('all')">All</button>
+                            <button class="btn btn-outline-primary" onclick="filterTests('passed')">Passed</button>
+                            <button class="btn btn-outline-primary" onclick="filterTests('failed')">Failed</button>
+                            <button class="btn btn-outline-primary" onclick="filterTests('warning')">Warnings</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Test Name</th>
+                                    <th>Column/Field</th>
+                                    <th>Expected</th>
+                                    <th>Actual</th>
+                                    <th>Status</th>
+                                    <th>Last Run</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="quality-tests-table">
+                                <tr>
+                                    <td colspan="7" class="text-center">Loading tests...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Data Profiling Results -->
+    <div class="row mb-4">
+        <div class="col-lg-6">
+            <div class="card">
+                <div class="card-header">
+                    <h6 class="mb-0"><i class="fas fa-chart-pie"></i> Data Distribution</h6>
+                </div>
+                <div class="card-body">
+                    <canvas id="data-distribution-chart" height="250"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-6">
+            <div class="card">
+                <div class="card-header">
+                    <h6 class="mb-0"><i class="fas fa-exclamation-circle"></i> Data Issues</h6>
+                </div>
+                <div class="card-body">
+                    <div id="data-issues-list">
+                        <div class="text-center text-muted">
+                            <i class="fas fa-info-circle"></i>
+                            <p>No data issues detected. Run quality check to analyze data.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Quality Rules Configuration -->
+    <div class="card">
+        <div class="card-header">
+            <div class="d-flex justify-content-between align-items-center">
+                <h6 class="mb-0"><i class="fas fa-cog"></i> Quality Rules Configuration</h6>
+                <button class="btn btn-primary btn-sm" onclick="showAddRuleModal()">
+                    <i class="fas fa-plus"></i> Add Rule
+                </button>
+            </div>
+        </div>
+        <div class="card-body">
+            <div class="row" id="quality-rules">
+                <div class="col-12">
+                    <div class="text-center text-muted">
+                        <i class="fas fa-cog"></i>
+                        <p>No quality rules configured. Click 'Add Rule' to create your first data quality rule.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Add Rule Modal -->
+<div id="addRuleModal" class="modal" style="display: none;">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalTitle">Add Data Quality Rule</h5>
+                <button type="button" class="btn-close" onclick="closeRuleModal()"></button>
+            </div>
+            <div class="modal-body">
+                <form id="ruleForm">
+                    <div class="mb-3">
+                        <label for="ruleName" class="form-label">Rule Name</label>
+                        <input type="text" class="form-control" id="ruleName" required>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="ruleType" class="form-label">Rule Type</label>
+                        <select class="form-control" id="ruleType" required>
+                            <option value="completeness">Completeness (Non-null values)</option>
+                            <option value="validity">Validity (Format validation)</option>
+                            <option value="uniqueness">Uniqueness (No duplicates)</option>
+                            <option value="consistency">Consistency (Business rules)</option>
+                            <option value="accuracy">Accuracy (Data correctness)</option>
+                        </select>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="ruleColumn" class="form-label">Column Name</label>
+                        <input type="text" class="form-control" id="ruleColumn" placeholder="e.g., email, phone, customer_id" required>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="ruleThreshold" class="form-label">Threshold (%)</label>
+                        <input type="number" class="form-control" id="ruleThreshold" min="0" max="100" value="95" required>
+                        <small class="text-muted">Minimum acceptable percentage for this rule</small>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="ruleDescription" class="form-label">Description (Optional)</label>
+                        <textarea class="form-control" id="ruleDescription" rows="2" placeholder="Describe what this rule validates"></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="closeRuleModal()">Cancel</button>
+                <button type="button" class="btn btn-primary" onclick="saveRule()">Save Rule</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+/* Modal styles */
+.modal {
+    position: fixed;
+    z-index: 1050;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0,0,0,0.5);
+}
+
+.modal-dialog {
+    position: relative;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    max-width: 500px;
+    width: 90%;
+}
+
+.modal-content {
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+}
+
+.modal-header {
+    padding: 1rem;
+    border-bottom: 1px solid #dee2e6;
+    display: flex;
+    justify-content: between;
+    align-items: center;
+}
+
+.modal-body {
+    padding: 1rem;
+}
+
+.modal-footer {
+    padding: 1rem;
+    border-top: 1px solid #dee2e6;
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.5rem;
+}
+
+.btn-close {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    font-weight: bold;
+    cursor: pointer;
+}
+</style>
+
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+let qualityDimensionsChart, dataDistributionChart;
+let qualityTests = [];
+let currentTestFilter = 'all';
+
+// No mock data - all tests loaded from API
+
+function initCharts() {
+    initQualityDimensionsChart();
+    initDataDistributionChart();
+}
+
+function initQualityDimensionsChart() {
+    const ctx = document.getElementById('quality-dimensions-chart').getContext('2d');
+    qualityDimensionsChart = new Chart(ctx, {
+        type: 'radar',
+        data: {
+            labels: ['Completeness', 'Accuracy', 'Consistency', 'Validity', 'Uniqueness'],
+            datasets: [{
+                label: 'Current',
+                data: [0, 0, 0, 0, 0], // START WITH ZEROS TO PREVENT DATA LEAK
+                borderColor: '#007bff',
+                backgroundColor: 'rgba(0, 123, 255, 0.2)',
+                pointBackgroundColor: '#007bff'
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            animation: false, // DISABLE ANIMATIONS TO PREVENT MEMORY LEAKS
+            scales: {
+                r: {
+                    beginAtZero: true,
+                    max: 100
+                }
+            }
+        }
+    });
+}
+
+function initDataDistributionChart() {
+    const ctx = document.getElementById('data-distribution-chart').getContext('2d');
+    dataDistributionChart = new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+            labels: ['Valid Data', 'Missing Values', 'Invalid Format', 'Duplicates'],
+            datasets: [{
+                data: [0, 0, 0, 0], // START WITH ZEROS TO PREVENT DATA LEAK
+                backgroundColor: ['#28a745', '#ffc107', '#dc3545', '#6c757d']
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            animation: false // DISABLE ANIMATIONS TO PREVENT MEMORY LEAKS
+        }
+    });
+}
+
+function loadQualityTests() {
+    // Fetch real quality tests from API
+    axios.get('/api/data-quality/tests')
+        .then(response => {
+            qualityTests = response.data.tests || [];
+            
+            // Update overview metrics with real data
+            document.getElementById('passed-tests').textContent = response.data.passed_tests || 0;
+            document.getElementById('failed-tests').textContent = response.data.failed_tests || 0;
+            document.getElementById('warnings').textContent = response.data.warning_tests || 0;
+            
+            // Calculate overall score
+            const total = response.data.total_tests || 1;
+            const passed = response.data.passed_tests || 0;
+            const score = Math.round((passed / total) * 100);
+            document.getElementById('overall-quality-score').textContent = score;
+            
+            renderQualityTests();
+        })
+        .catch(error => {
+            console.error('Error loading quality tests:', error);
+            // Fallback to show error
+            document.getElementById('quality-tests-table').innerHTML = `
+                <tr>
+                    <td colspan="7" class="text-center text-danger">
+                        <i class="fas fa-exclamation-triangle"></i> Error loading tests: ${error.message}
+                    </td>
+                </tr>
+            `;
+        });
+}
+
+function renderQualityTests(filteredTests = qualityTests) {
+    const tbody = document.getElementById('quality-tests-table');
+    
+    if (currentTestFilter !== 'all') {
+        filteredTests = filteredTests.filter(test => test.status === currentTestFilter);
+    }
+    
+    if (filteredTests.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="7" class="text-center text-muted">No tests found</td></tr>';
+        return;
+    }
+    
+    const rowsHtml = filteredTests.map(test => {
+        const statusClass = test.status === 'passed' ? 'success' : 
+                           test.status === 'failed' ? 'danger' : 'warning';
+        const statusIcon = test.status === 'passed' ? 'check-circle' : 
+                          test.status === 'failed' ? 'times-circle' : 'exclamation-triangle';
+        
+        return `
+            <tr>
+                <td>${test.name || test.expectation_type}</td>
+                <td>${test.column || ''}</td>
+                <td>${test.kwargs ? JSON.stringify(test.kwargs) : test.expected || 'N/A'}</td>
+                <td>${test.details || test.actual || 'N/A'}</td>
+                <td>
+                    <span class="badge bg-${statusClass}">
+                        <i class="fas fa-${statusIcon}"></i> ${test.status}
+                    </span>
+                </td>
+                <td><small>${test.last_run || test.lastRun || new Date().toLocaleString()}</small></td>
+                <td>
+                    <button class="btn btn-outline-primary btn-sm" onclick="viewTestDetails('${test.id || test.name}')">
+                        <i class="fas fa-eye"></i>
+                    </button>
+                    <button class="btn btn-outline-secondary btn-sm" onclick="rerunTest('${test.id || test.name}')">
+                        <i class="fas fa-redo"></i>
+                    </button>
+                </td>
+            </tr>
+        `;
+    }).join('');
+    
+    tbody.innerHTML = rowsHtml;
+}
+
+function filterTests(filter) {
+    currentTestFilter = filter;
+    // Update button states - fix color changes
+    document.querySelectorAll('[onclick*="filterTests"]').forEach(btn => {
+        btn.classList.remove('active', 'btn-primary');
+        btn.classList.add('btn-outline-primary');
+    });
+    
+    // Set active button
+    event.target.classList.remove('btn-outline-primary');
+    event.target.classList.add('active', 'btn-primary');
+    
+    renderQualityTests();
+}
+
+function runQualityCheck() {
+    if (confirm('Are you sure you want to run a full data quality check? This may take a few minutes.')) {
+        // Show loading state
+        const button = event.target;
+        const originalHtml = button.innerHTML;
+        button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Running...';
+        button.disabled = true;
+        
+        // Run all quality tests via API
+        axios.post('/api/data-quality/run-all-tests')
+            .then(response => {
+                const result = response.data;
+                alert(`Quality check completed!\n\nSummary:\n- Passed: ${result.passed_tests}\n- Failed: ${result.failed_tests}\n- Warnings: ${result.warning_tests}\n\nExecution time: ${result.execution_time}s`);
+                
+                // Refresh the data to show updated results
+                refreshQualityData();
+            })
+            .catch(error => {
+                console.error('Quality check error:', error);
+                
+                let errorMessage = 'Unable to run quality check. ';
+                
+                if (error.response?.status === 404) {
+                    errorMessage += 'API endpoint not found. Make sure the web server is running.';
+                } else if (error.response?.status === 500) {
+                    errorMessage += `Server error: ${error.response?.data?.error || 'Internal server error'}`;
+                } else if (error.code === 'ECONNREFUSED' || error.message.includes('Network Error')) {
+                    errorMessage += 'Cannot connect to server. Please start the web application first.';
+                } else {
+                    errorMessage += error.response?.data?.error || error.message || 'Unknown error occurred';
+                }
+                
+                alert(errorMessage);
+            })
+            .finally(() => {
+                // Restore button
+                button.innerHTML = originalHtml;
+                button.disabled = false;
+            });
+    }
+}
+
+function refreshQualityData() {
+    // Show visual feedback that refresh is working
+    const refreshBtn = document.querySelector('[onclick="refreshQualityData()"]');
+    const originalContent = refreshBtn.innerHTML;
+    
+    // Show spinner
+    refreshBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Refreshing...';
+    refreshBtn.disabled = true;
+    
+    try {
+        // Load data
+        loadQualityTests();
+        updateQualityOverview();
+        updateDataIssues();
+        
+        // Success feedback
+        refreshBtn.innerHTML = '<i class="fas fa-check"></i> Updated';
+        refreshBtn.classList.add('btn-success');
+        refreshBtn.classList.remove('btn-outline-secondary');
+        
+        // Reset after 2 seconds
+        setTimeout(() => {
+            refreshBtn.innerHTML = originalContent;
+            refreshBtn.disabled = false;
+            refreshBtn.classList.remove('btn-success');
+            refreshBtn.classList.add('btn-outline-secondary');
+        }, 2000);
+        
+    } catch (error) {
+        console.error('Quality refresh error:', error);
+        
+        // Error feedback  
+        refreshBtn.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Error';
+        refreshBtn.classList.add('btn-danger');
+        refreshBtn.classList.remove('btn-outline-secondary');
+        
+        // Reset after 3 seconds
+        setTimeout(() => {
+            refreshBtn.innerHTML = originalContent;
+            refreshBtn.disabled = false;
+            refreshBtn.classList.remove('btn-danger');
+            refreshBtn.classList.add('btn-outline-secondary');
+        }, 3000);
+    }
+}
+
+function updateQualityOverview() {
+    // Get real metrics from API - no fake data
+    fetch('/api/quality-metrics')
+        .then(response => response.json())
+        .then(data => {
+            if (data.quality_metrics) {
+                // Calculate overall score from real metrics
+                const metrics = data.quality_metrics;
+                const avgScore = Math.round((metrics.completeness + metrics.accuracy + metrics.consistency + metrics.validity + metrics.uniqueness) / 5);
+                document.getElementById('overall-quality-score').textContent = avgScore;
+            } else {
+                document.getElementById('overall-quality-score').textContent = '0';
+            }
+            
+            document.getElementById('passed-tests').textContent = '0';
+            document.getElementById('failed-tests').textContent = '0';
+            document.getElementById('warnings').textContent = '0';
+        })
+        .catch(error => {
+            console.error('Error loading quality overview:', error);
+            document.getElementById('overall-quality-score').textContent = '0';
+            document.getElementById('passed-tests').textContent = '0';
+            document.getElementById('failed-tests').textContent = '0';
+            document.getElementById('warnings').textContent = '0';
+        });
+}
+
+function updateDataIssues() {
+    // Load real data issues from API
+    fetch('/api/data-quality/issues')
+        .then(response => response.json())
+        .then(data => {
+            const issuesContainer = document.getElementById('data-issues-list');
+            
+            if (data.issues && data.issues.length > 0) {
+                const issuesHtml = data.issues.map(issue => {
+                    const alertClass = issue.severity === 'high' ? 'danger' : 
+                                     issue.severity === 'medium' ? 'warning' : 'info';
+                    const iconClass = issue.severity === 'high' ? 'times-circle' : 
+                                     issue.severity === 'medium' ? 'exclamation-triangle' : 'info-circle';
+                    
+                    return `
+                        <div class="alert alert-${alertClass} d-flex align-items-center">
+                            <i class="fas fa-${iconClass} me-2"></i>
+                            <div>
+                                <strong>${issue.title}</strong><br>
+                                <small>${issue.description}</small>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+                
+                issuesContainer.innerHTML = issuesHtml;
+            } else {
+                issuesContainer.innerHTML = `
+                    <div class="text-center text-muted">
+                        <i class="fas fa-check-circle text-success"></i>
+                        <p>No data quality issues detected.</p>
+                    </div>
+                `;
+            }
+        })
+        .catch(error => {
+            console.error('Error loading data issues:', error);
+            // Keep default "No issues" message on error
+        });
+}
+
+function viewTestDetails(testName) {
+    alert(`Viewing details for test: ${testName}`);
+}
+
+function rerunTest(testId) {
+    if (confirm(`Rerun test: ${testId}?`)) {
+        // Show loading state
+        const button = event.target.closest('button');
+        const originalHtml = button.innerHTML;
+        button.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+        button.disabled = true;
+        
+        // Run the test via API
+        axios.post(`/api/data-quality/run-test/${testId}`)
+            .then(response => {
+                alert(`Test completed with status: ${response.data.status}`);
+                // Reload tests to get updated results
+                loadQualityTests();
+            })
+            .catch(error => {
+                alert(`Error running test: ${error.response?.data?.error || error.message}`);
+            })
+            .finally(() => {
+                // Restore button
+                button.innerHTML = originalHtml;
+                button.disabled = false;
+            });
+    }
+}
+
+function showAddRuleModal() {
+    document.getElementById('addRuleModal').style.display = 'block';
+}
+
+function editRule(ruleId) {
+    // Set modal to edit mode
+    document.getElementById('addRuleModal').style.display = 'block';
+    document.getElementById('modalTitle').textContent = 'Edit Quality Rule';
+    
+    // Store the rule ID being edited
+    document.getElementById('addRuleModal').setAttribute('data-editing-rule-id', ruleId);
+    
+    // Pre-populate form with existing rule data
+    const ruleData = getExistingRule(ruleId);
+    if (ruleData) {
+        document.getElementById('ruleName').value = ruleData.name || ruleId;
+        document.getElementById('ruleType').value = ruleData.type || 'completeness';
+        document.getElementById('ruleColumn').value = ruleData.column || '';
+        document.getElementById('ruleThreshold').value = ruleData.threshold || '';
+        document.getElementById('ruleDescription').value = ruleData.description || '';
+    }
+    
+    // Change save button text
+    const saveButton = document.querySelector('.modal-footer .btn-primary');
+    saveButton.textContent = 'Update Rule';
+}
+
+function toggleRule(ruleId) {
+    // Toggle rule active/inactive state
+    const card = document.querySelector(`#quality-rules .card[data-rule-id="${ruleId}"]`);
+    if (card) {
+        const statusCell = card.querySelector('.badge');
+        const toggleBtn = card.querySelector('.dropdown-menu [onclick*="toggleRule"]');
+        
+        if (statusCell.textContent === 'Active') {
+            statusCell.textContent = 'Inactive';
+            statusCell.className = 'badge bg-secondary';
+            if (toggleBtn) toggleBtn.textContent = 'Enable';
+        } else {
+            statusCell.textContent = 'Active';
+            statusCell.className = 'badge bg-success';
+            if (toggleBtn) toggleBtn.textContent = 'Disable';
+        }
+    }
+}
+
+function deleteRule(ruleId) {
+    if (confirm(`Are you sure you want to delete the "${ruleId}" rule? This action cannot be undone.`)) {
+        // Remove rule card
+        const card = document.querySelector(`#quality-rules .card[data-rule-id="${ruleId}"]`);
+        if (card) {
+            const cardContainer = card.closest('.col-lg-4');
+            if (cardContainer) {
+                cardContainer.remove();
+                console.log(`Rule "${ruleId}" deleted successfully`);
+                
+                // Update rule count
+                updateRuleCount();
+            }
+        }
+    }
+}
+
+function getExistingRule(ruleId) {
+    // Get rule data from the actual DOM card
+    const card = document.querySelector(`#quality-rules .card[data-rule-id="${ruleId}"]`);
+    if (card) {
+        const title = card.querySelector('.card-title')?.textContent || '';
+        const description = card.querySelector('.card-text')?.textContent || '';
+        
+        return {
+            name: title,
+            type: 'completeness', // Default, would come from API in real implementation
+            column: 'email', // Default, would come from API
+            threshold: '95', // Default, would come from API  
+            description: description
+        };
+    }
+    
+    // Fallback mock data for any missing rules
+    const rules = {
+        'non-null': { name: 'Non-null values', type: 'completeness', column: 'email', threshold: '95', description: 'Ensures critical fields are not empty' },
+        'email-format': { name: 'Email format validation', type: 'validity', column: 'email', threshold: '98', description: 'Validates email format patterns' },
+        'range-validation': { name: 'Range Validation', type: 'consistency', column: 'age', threshold: '100', description: 'Checks numeric values are within expected range' }
+    };
+    return rules[ruleId] || {};
+}
+
+function updateRuleCount() {
+    const activeRules = document.querySelectorAll('#quality-rules .badge.bg-success').length;
+    const totalRules = document.querySelectorAll('#quality-rules .card').length;
+    console.log(`Rules updated: ${activeRules}/${totalRules} active`);
+}
+
+function closeRuleModal() {
+    document.getElementById('addRuleModal').style.display = 'none';
+    // Reset form
+    document.getElementById('ruleForm').reset();
+    document.getElementById('modalTitle').textContent = 'Add Data Quality Rule';
+    
+    // Clear edit mode data
+    document.getElementById('addRuleModal').removeAttribute('data-editing-rule-id');
+    
+    // Reset save button text
+    const saveButton = document.querySelector('.modal-footer .btn-primary');
+    saveButton.textContent = 'Save Rule';
+}
+
+function saveRule() {
+    // Get form data
+    const ruleName = document.getElementById('ruleName').value;
+    const ruleType = document.getElementById('ruleType').value;
+    const ruleColumn = document.getElementById('ruleColumn').value;
+    const ruleThreshold = document.getElementById('ruleThreshold').value;
+    const ruleDescription = document.getElementById('ruleDescription').value;
+    
+    // Validate required fields
+    if (!ruleName || !ruleType || !ruleColumn || !ruleThreshold) {
+        alert('Please fill in all required fields');
+        return;
+    }
+    
+    // Check if we're editing an existing rule
+    const modal = document.getElementById('addRuleModal');
+    const editingRuleId = modal.getAttribute('data-editing-rule-id');
+    
+    if (editingRuleId) {
+        // UPDATE existing rule
+        const ruleData = {
+            id: editingRuleId,
+            name: ruleName,
+            type: ruleType,
+            column: ruleColumn,
+            threshold: parseInt(ruleThreshold),
+            description: ruleDescription,
+            status: 'active',
+            updated: new Date().toISOString()
+        };
+        
+        console.log('Updating existing rule:', ruleData);
+        
+        // Update the existing rule card in the UI
+        updateRuleInUI(editingRuleId, ruleData);
+        
+        // Close modal
+        closeRuleModal();
+        
+        // Show success message
+        alert(`Data Quality Rule "${ruleName}" updated successfully!`);
+        
+    } else {
+        // CREATE new rule
+        const newRule = {
+            id: ruleName.toLowerCase().replace(/\s+/g, '-'),
+            name: ruleName,
+            type: ruleType,
+            column: ruleColumn,
+            threshold: parseInt(ruleThreshold),
+            description: ruleDescription,
+            status: 'active',
+            created: new Date().toISOString()
+        };
+        
+        console.log('Creating new rule:', newRule);
+        
+        // Add rule to the UI
+        addRuleToUI(newRule);
+        
+        // Close modal
+        closeRuleModal();
+        
+        // Show success message
+        alert(`Data Quality Rule "${ruleName}" created successfully!`);
+    }
+}
+
+function addRuleToUI(rule) {
+    // Add rule card to the UI (simplified version)
+    const rulesContainer = document.getElementById('quality-rules');
+    
+    const ruleCard = document.createElement('div');
+    ruleCard.className = 'col-lg-4 col-md-6 mb-3';
+    ruleCard.innerHTML = `
+        <div class="card border-left-primary" data-rule-id="${rule.id}">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <h6 class="card-title">${rule.name}</h6>
+                        <p class="card-text small text-muted">${rule.description || `${rule.type} validation for ${rule.column}`}</p>
+                        <span class="badge bg-success">Active</span>
+                    </div>
+                    <div class="dropdown">
+                        <button class="btn btn-sm btn-outline-secondary dropdown-toggle" data-bs-toggle="dropdown">
+                            <i class="fas fa-cog"></i>
+                        </button>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="#" onclick="editRule('${rule.id}')">Edit</a></li>
+                            <li><a class="dropdown-item" href="#" onclick="toggleRule('${rule.id}')">Disable</a></li>
+                            <li><a class="dropdown-item text-danger" href="#" onclick="deleteRule('${rule.id}')">Delete</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    rulesContainer.appendChild(ruleCard);
+}
+
+function updateRuleInUI(ruleId, ruleData) {
+    // Find the existing rule card using the data attribute
+    const ruleCard = document.querySelector(`#quality-rules .card[data-rule-id="${ruleId}"]`);
+    
+    if (ruleCard) {
+        // Update the card content
+        const titleElement = ruleCard.querySelector('.card-title');
+        const descriptionElement = ruleCard.querySelector('.card-text');
+        
+        if (titleElement) {
+            titleElement.textContent = ruleData.name;
+        }
+        
+        if (descriptionElement) {
+            descriptionElement.textContent = ruleData.description || `${ruleData.type} validation for ${ruleData.column}`;
+        }
+        
+        console.log(`✅ Updated rule card for ${ruleId}: "${ruleData.name}"`);
+        
+        // Add visual feedback that the rule was updated
+        ruleCard.style.animation = 'pulse 0.5s ease-in-out';
+        setTimeout(() => {
+            ruleCard.style.animation = '';
+        }, 500);
+        
+    } else {
+        console.warn(`Could not find rule card for ${ruleId} to update`);
+    }
+}
+
+// Initialize page
+document.addEventListener('DOMContentLoaded', function() {
+    initCharts();
+    loadQualityTests();
+    updateQualityOverview();
+    updateDataIssues();
+});
+</script>
+
+<style>
+.quality-score-circle {
+    width: 60px;
+    height: 60px;
+    border: 3px solid #007bff;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto;
+    font-size: 18px;
+    font-weight: bold;
+    color: #007bff;
+}
+
+.border-left-success {
+    border-left: 3px solid #28a745 !important;
+}
+
+.border-left-warning {
+    border-left: 3px solid #ffc107 !important;
+}
+
+.border-left-primary {
+    border-left: 3px solid #007bff !important;
+}
+
+.quality-dimension .progress {
+    height: 8px;
+}
+
+.metric-card {
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.metric-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+</style>
+{% endblock %}

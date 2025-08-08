@@ -1,0 +1,141 @@
+# Multi-stage Dockerfile for production deployment
+FROM python:3.11-slim as base
+
+# Set environment variables
+ENV PYTHONUNBUFFERED=1
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PIP_NO_CACHE_DIR=1
+ENV PIP_DISABLE_PIP_VERSION_CHECK=1
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y \
+    gcc \
+    g++ \
+    curl \
+    postgresql-client \
+    redis-tools \
+    && rm -rf /var/lib/apt/lists/*
+
+# Create non-root user
+RUN useradd --create-home --shell /bin/bash pipeline
+WORKDIR /app
+RUN chown pipeline:pipeline /app
+
+# Install Python dependencies
+COPY requirements.txt pyproject.toml ./
+RUN pip install --no-deps -r requirements.txt
+
+# Development stage
+FROM base as development
+
+# Install development dependencies
+RUN pip install -e ".[dev,monitoring,web]"
+
+# Copy source code
+COPY --chown=pipeline:pipeline . .
+
+USER pipeline
+EXPOSE 8080
+CMD ["python", "-m", "uvicorn", "data_pipeline.web.app:app", "--host", "0.0.0.0", "--port", "8080"]
+
+# Production base stage
+FROM base as production-base
+
+# Install production dependencies only
+RUN pip install --no-deps -e ".[monitoring,web]"
+
+# Copy source code
+COPY --chown=pipeline:pipeline src/ ./src/
+COPY --chown=pipeline:pipeline config/ ./config/
+COPY --chown=pipeline:pipeline pyproject.toml ./
+
+# Install the package
+RUN pip install --no-deps -e .
+
+# Production application stage
+FROM production-base as production
+
+USER pipeline
+EXPOSE 8080
+
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+  CMD curl -f http://localhost:8080/api/health || exit 1
+
+CMD ["python", "-m", "uvicorn", "data_pipeline.web.app:app", "--host", "0.0.0.0", "--port", "8080", "--workers", "4"]
+
+# Web interface stage
+FROM production-base as web
+
+USER pipeline
+EXPOSE 8080
+
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+  CMD curl -f http://localhost:8080/ || exit 1
+
+CMD ["python", "-m", "data_pipeline.web.app"]
+
+# Monitoring dashboard stage
+FROM production-base as monitoring
+
+USER pipeline
+EXPOSE 8050
+
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+  CMD curl -f http://localhost:8050/health || exit 1
+
+CMD ["python", "-m", "data_pipeline.observability.dashboard"]
+
+# Worker stage for queue processing
+FROM production-base as worker
+
+USER pipeline
+
+CMD ["python", "scripts/queue_processor.py", "--mode", "continuous", "--poll-interval", "10"]
+
+# Backup service stage
+FROM production-base as backup
+
+# Install additional backup tools
+USER root
+RUN apt-get update && apt-get install -y \
+    awscli \
+    cron \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copy backup scripts
+COPY --chown=pipeline:pipeline scripts/backup.sh /usr/local/bin/backup.sh
+RUN chmod +x /usr/local/bin/backup.sh
+
+USER pipeline
+CMD ["python", "scripts/backup_scheduler.py"]
+
+# Testing stage
+FROM base as testing
+
+# Install test dependencies
+RUN pip install -e ".[dev,monitoring,web]"
+
+# Copy source and tests
+COPY --chown=pipeline:pipeline . .
+
+USER pipeline
+CMD ["python", "-m", "pytest", "-v", "--cov=src/data_pipeline"]
+
+# Documentation stage
+FROM node:18-alpine as docs
+
+WORKDIR /app
+
+# Install documentation dependencies
+RUN npm install -g @gitbook/cli
+
+# Copy documentation
+COPY docs/ ./docs/
+COPY README.md ./
+
+# Build documentation
+RUN gitbook build docs/ public/
+
+# Serve documentation
+EXPOSE 4000
+CMD ["gitbook", "serve", "docs/", "--port", "4000"]

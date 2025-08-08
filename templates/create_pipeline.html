@@ -1,0 +1,991 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1><i class="fas fa-plus-circle"></i> Create New Pipeline</h1>
+        <a href="/pipelines" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left"></i> Back to Pipelines
+        </a>
+    </div>
+    
+    <form id="create-pipeline-form">
+        <!-- Pipeline Basic Info -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h6 class="mb-0"><i class="fas fa-info-circle"></i> Basic Information</h6>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label for="pipeline-name" class="form-label">Pipeline Name *</label>
+                            <input type="text" class="form-control" id="pipeline-name" required>
+                            <div class="form-text">Unique identifier for your pipeline</div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label for="pipeline-description" class="form-label">Description</label>
+                            <input type="text" class="form-control" id="pipeline-description">
+                            <div class="form-text">Brief description of what this pipeline does</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Data Source Configuration -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h6 class="mb-0"><i class="fas fa-database"></i> Data Source</h6>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label for="source-type" class="form-label">Source Type *</label>
+                            <select class="form-select" id="source-type" required onchange="updateSourceConfig()">
+                                <option value="">Select source type...</option>
+                                <option value="csv">CSV File</option>
+                                <option value="json">JSON File</option>
+                                <option value="s3">Amazon S3</option>
+                                <option value="postgresql">PostgreSQL</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label class="form-label">Data Source Method</label>
+                            <div class="btn-group w-100" role="group">
+                                <input type="radio" class="btn-check" name="source-method" id="method-upload" value="upload" checked>
+                                <label class="btn btn-outline-primary" for="method-upload">
+                                    <i class="fas fa-upload"></i> Upload File
+                                </label>
+                                
+                                <input type="radio" class="btn-check" name="source-method" id="method-path" value="path">
+                                <label class="btn btn-outline-primary" for="method-path">
+                                    <i class="fas fa-folder-open"></i> Use File Path
+                                </label>
+                            </div>
+                            
+                            <!-- Upload method -->
+                            <div id="upload-method" class="mt-2">
+                                <input type="file" class="form-control" id="file-upload" accept=".csv,.json,.xlsx">
+                                <div class="form-text">Choose file from your computer</div>
+                            </div>
+                            
+                            <!-- Path method -->
+                            <div id="path-method" class="mt-2" style="display: none;">
+                                <input type="text" class="form-control" id="manual-path" placeholder="/path/to/your/file.csv">
+                                <div class="form-text">Enter path to file on server</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Dynamic Source Configuration -->
+                <div id="source-config" class="row" style="display: none;">
+                    <div class="col-12">
+                        <h6>Source Configuration</h6>
+                        <div id="source-config-fields"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Processing Configuration -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h6 class="mb-0"><i class="fas fa-cogs"></i> Processing Engine</h6>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label for="processing-engine" class="form-label">Engine *</label>
+                            <select class="form-select" id="processing-engine" required>
+                                <option value="pandas">Pandas (Small to Medium datasets)</option>
+                                <option value="spark">Apache Spark (Large datasets)</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label for="storage-mode" class="form-label">Storage Mode</label>
+                            <select class="form-select" id="storage-mode">
+                                <option value="append">Append to existing table</option>
+                                <option value="replace">Replace existing table</option>
+                                <option value="create">Create new table</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Data Transformations -->
+                <div class="mb-3">
+                    <label class="form-label">Data Transformations</label>
+                    <div id="transformations-list">
+                        <p class="text-muted">No transformations added yet.</p>
+                    </div>
+                    <button type="button" class="btn btn-outline-primary btn-sm" onclick="addTransformation()">
+                        <i class="fas fa-plus"></i> Add Transformation
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Output Configuration -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h6 class="mb-0"><i class="fas fa-save"></i> Output Configuration</h6>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label for="destination-table" class="form-label">Destination Table *</label>
+                            <div class="input-group">
+                                <input type="text" class="form-control" id="destination-table" required>
+                                <button type="button" class="btn btn-outline-secondary" onclick="showTableBrowser()">
+                                    <i class="fas fa-table"></i> Browse Tables
+                                </button>
+                            </div>
+                            <div class="form-text">Name of the target PostgreSQL table</div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label for="destination-schema" class="form-label">Database Schema</label>
+                            <div class="input-group">
+                                <select class="form-control" id="destination-schema">
+                                    <option value="public">public</option>
+                                </select>
+                                <button type="button" class="btn btn-outline-secondary" onclick="refreshSchemas()">
+                                    <i class="fas fa-sync-alt"></i>
+                                </button>
+                            </div>
+                            <div class="form-text">PostgreSQL schema name</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Optional Features -->
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-check mb-3">
+                            <input class="form-check-input" type="checkbox" id="enable-validation" checked>
+                            <label class="form-check-label" for="enable-validation">
+                                Enable Data Quality Validation
+                            </label>
+                        </div>
+                        <div class="form-check mb-3">
+                            <input class="form-check-input" type="checkbox" id="enable-profiling">
+                            <label class="form-check-label" for="enable-profiling">
+                                Generate Data Profile Report
+                            </label>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-check mb-3">
+                            <input class="form-check-input" type="checkbox" id="enable-monitoring" checked>
+                            <label class="form-check-label" for="enable-monitoring">
+                                Enable Performance Monitoring
+                            </label>
+                        </div>
+                        <div class="form-check mb-3">
+                            <input class="form-check-input" type="checkbox" id="enable-alerts">
+                            <label class="form-check-label" for="enable-alerts">
+                                Enable Alert Notifications
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Action Buttons -->
+        <div class="d-flex justify-content-between">
+            <button type="button" class="btn btn-outline-secondary" onclick="resetForm()">
+                <i class="fas fa-undo"></i> Reset Form
+            </button>
+            <div>
+                <button type="button" class="btn btn-outline-primary me-2" onclick="saveDraft()">
+                    <i class="fas fa-save"></i> Save Draft
+                </button>
+                <button type="submit" class="btn btn-success">
+                    <i class="fas fa-check"></i> Create Pipeline
+                </button>
+            </div>
+        </div>
+    </form>
+</div>
+
+<!-- Table Browser Modal -->
+<div id="tableBrowserModal" class="modal" style="display: none;">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Browse Database Tables</h5>
+                <button type="button" class="btn-close" onclick="closeTableBrowser()"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <input type="text" class="form-control" id="table-search" placeholder="Search tables..." onkeyup="filterTables()">
+                </div>
+                
+                <div id="tables-loading" class="text-center">
+                    <i class="fas fa-spinner fa-spin"></i> Loading tables...
+                </div>
+                
+                <div id="tables-list" style="display: none;">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Table Name</th>
+                                    <th>Schema</th>
+                                    <th>Rows</th>
+                                    <th>Columns</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tables-tbody">
+                                <!-- Tables will be loaded here -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                
+                <div id="tables-empty" class="text-center text-muted" style="display: none;">
+                    <i class="fas fa-database"></i>
+                    <p>No tables found in the database.</p>
+                    <small>Tables will appear here once you create them with pipelines.</small>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="closeTableBrowser()">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+/* Modal styles */
+.modal {
+    position: fixed;
+    z-index: 1050;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0,0,0,0.5);
+}
+
+.modal-dialog {
+    position: relative;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    max-width: 800px;
+    width: 90%;
+}
+
+.modal-content {
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+}
+
+.modal-header {
+    padding: 1rem;
+    border-bottom: 1px solid #dee2e6;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.modal-body {
+    padding: 1rem;
+    max-height: 60vh;
+    overflow-y: auto;
+}
+
+.modal-footer {
+    padding: 1rem;
+    border-top: 1px solid #dee2e6;
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.5rem;
+}
+
+.btn-close {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    font-weight: bold;
+    cursor: pointer;
+}
+</style>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+let transformations = [];
+
+const sourceConfigs = {
+    csv: [
+        { name: 'file_path', label: 'File Path', type: 'file_browser', required: true, accept: '.csv' },
+        { name: 'delimiter', label: 'Delimiter', type: 'select', options: [',', ';', '|', '\t', ' '], labels: ['Comma (,)', 'Semicolon (;)', 'Pipe (|)', 'Tab', 'Space'], value: ',' },
+        { name: 'encoding', label: 'Encoding', type: 'select', options: ['utf-8', 'latin-1', 'ascii', 'utf-16', 'cp1252'], value: 'utf-8' }
+    ],
+    json: [
+        { name: 'file_path', label: 'File Path', type: 'file_browser', required: true, accept: '.json,.jsonl' },
+        { name: 'lines', label: 'Line-delimited JSON', type: 'checkbox' },
+        { name: 'normalize', label: 'Normalize nested objects', type: 'checkbox', checked: true }
+    ],
+    s3: [
+        { name: 'bucket', label: 'S3 Bucket', type: 'bucket_browser', required: true },
+        { name: 'region', label: 'AWS Region', type: 'select', options: ['us-east-1', 'us-west-2', 'eu-west-1', 'eu-central-1', 'ap-southeast-1'], value: 'us-east-1' },
+        { name: 'prefix', label: 'Folder Path in Bucket', type: 'path_selector', placeholder: 'data/csv/ or reports/2024/' },
+        { name: 'file_pattern', label: 'File Name Pattern', type: 'text', placeholder: '*.csv or sales_*.json or leave blank for all files' },
+        { name: 'aws_access_key', label: 'AWS Access Key', type: 'text' },
+        { name: 'aws_secret_key', label: 'AWS Secret Key', type: 'password' }
+    ],
+    postgresql: [
+        { name: 'query', label: 'SQL Query', type: 'textarea', required: true },
+        { name: 'host', label: 'Database Host', type: 'text', value: 'localhost', required: true },
+        { name: 'port', label: 'Port', type: 'number', value: '5432', required: true },
+        { name: 'database', label: 'Database Name', type: 'text', required: true },
+        { name: 'username', label: 'Username', type: 'text', required: true },
+        { name: 'password', label: 'Password', type: 'password', required: true },
+        { name: 'schema', label: 'Schema', type: 'select', options: ['public', 'staging', 'analytics', 'reporting'], value: 'public' }
+    ]
+};
+
+function updateSourceConfig() {
+    const sourceType = document.getElementById('source-type').value;
+    const configDiv = document.getElementById('source-config');
+    const fieldsDiv = document.getElementById('source-config-fields');
+    
+    if (!sourceType) {
+        configDiv.style.display = 'none';
+        return;
+    }
+    
+    const config = sourceConfigs[sourceType] || [];
+    let fieldsHtml = '';
+    
+    config.forEach(field => {
+        let inputHtml = '';
+        if (field.type === 'select') {
+            const options = field.options.map((opt, index) => {
+                const label = field.labels ? field.labels[index] : opt;
+                return `<option value="${opt}" ${field.value === opt ? 'selected' : ''}>${label}</option>`;
+            }).join('');
+            inputHtml = `<select class="form-control" name="${field.name}">${options}</select>`;
+        } else if (field.type === 'file_browser') {
+            inputHtml = `
+                <div class="input-group">
+                    <input type="text" class="form-control" name="${field.name}" ${field.required ? 'required' : ''} placeholder="Select a file...">
+                    <button type="button" class="btn btn-outline-secondary" onclick="browseFiles('${field.name}', '${field.accept}')">
+                        <i class="fas fa-folder-open"></i> Browse
+                    </button>
+                </div>
+            `;
+        } else if (field.type === 'bucket_browser') {
+            inputHtml = `
+                <div class="input-group">
+                    <select class="form-control" name="${field.name}" ${field.required ? 'required' : ''}>
+                        <option value="">Loading buckets...</option>
+                    </select>
+                    <button type="button" class="btn btn-outline-secondary" onclick="refreshS3Buckets('${field.name}')">
+                        <i class="fas fa-sync-alt"></i>
+                    </button>
+                </div>
+            `;
+        } else if (field.type === 'number') {
+            inputHtml = `<input type="number" class="form-control" name="${field.name}" ${field.required ? 'required' : ''} ${field.value ? `value="${field.value}"` : ''} min="1" max="65535">`;
+        } else if (field.type === 'checkbox') {
+            inputHtml = `
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" name="${field.name}" ${field.checked ? 'checked' : ''}>
+                    <label class="form-check-label">${field.label}</label>
+                </div>
+            `;
+        } else if (field.type === 'textarea') {
+            inputHtml = `<textarea class="form-control" name="${field.name}" rows="3" ${field.required ? 'required' : ''}></textarea>`;
+        } else {
+            inputHtml = `<input type="${field.type}" class="form-control" name="${field.name}" ${field.required ? 'required' : ''} ${field.value ? `value="${field.value}"` : ''}>`;
+        }
+        
+        if (field.type !== 'checkbox') {
+            fieldsHtml += `
+                <div class="mb-3">
+                    <label class="form-label">${field.label} ${field.required ? '*' : ''}</label>
+                    ${inputHtml}
+                </div>
+            `;
+        } else {
+            fieldsHtml += `<div class="mb-3">${inputHtml}</div>`;
+        }
+    });
+    
+    fieldsDiv.innerHTML = fieldsHtml;
+    configDiv.style.display = 'block';
+    
+    // Add test connection button for PostgreSQL
+    if (sourceType === 'postgresql') {
+        fieldsDiv.insertAdjacentHTML('beforeend', `
+            <div class="mb-3">
+                <button type="button" class="btn btn-outline-success" onclick="testPostgreSQLConnection()">
+                    <i class="fas fa-plug"></i> Test Database Connection
+                </button>
+            </div>
+        `);
+    }
+}
+
+function addTransformation() {
+    const transformationTypes = [
+        { value: 'filter_rows', label: 'Filter Rows', example: 'age > 18' },
+        { value: 'select_columns', label: 'Select Columns', example: 'name,email,age' },
+        { value: 'rename_columns', label: 'Rename Columns', example: 'old_name:new_name,email:contact_email' },
+        { value: 'convert_types', label: 'Convert Data Types', example: 'age:int,price:float' },
+        { value: 'aggregate', label: 'Aggregate Data', example: 'GROUP BY category' },
+        { value: 'sort', label: 'Sort Data', example: 'name ASC, age DESC' }
+    ];
+    
+    const transformationId = `transform-${transformations.length}`;
+    const transformationHtml = `
+        <div class="border rounded p-3 mb-3" id="${transformationId}">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <h6 class="mb-0">Transformation ${transformations.length + 1}</h6>
+                <button type="button" class="btn btn-outline-danger btn-sm" onclick="removeTransformation('${transformationId}')">
+                    <i class="fas fa-trash"></i>
+                </button>
+            </div>
+            <div class="row">
+                <div class="col-md-4">
+                    <select class="form-select form-select-sm" name="transformation-type" onchange="updateTransformationConfig('${transformationId}')">
+                        <option value="">Select operation...</option>
+                        ${transformationTypes.map(type => `<option value="${type.value}" data-example="${type.example}">${type.label}</option>`).join('')}
+                    </select>
+                </div>
+                <div class="col-md-8">
+                    <div class="input-group input-group-sm">
+                        <input type="text" class="form-control" name="transformation-config" placeholder="Configuration...">
+                        <button type="button" class="btn btn-outline-secondary" onclick="showColumnSelector('${transformationId}')" title="Select from available columns">
+                            <i class="fas fa-columns"></i>
+                        </button>
+                    </div>
+                    <small class="text-muted" id="example-${transformationId}">Select operation to see example</small>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    const listDiv = document.getElementById('transformations-list');
+    if (transformations.length === 0) {
+        listDiv.innerHTML = '';
+    }
+    listDiv.insertAdjacentHTML('beforeend', transformationHtml);
+    
+    transformations.push({ id: transformationId });
+}
+
+function updateTransformationConfig(transformationId) {
+    const transformDiv = document.getElementById(transformationId);
+    const select = transformDiv.querySelector('select[name="transformation-type"]');
+    const selectedOption = select.options[select.selectedIndex];
+    const example = selectedOption.getAttribute('data-example');
+    const exampleDiv = document.getElementById(`example-${transformationId}`);
+    
+    if (example) {
+        exampleDiv.textContent = `Example: ${example}`;
+        transformDiv.querySelector('input[name="transformation-config"]').placeholder = example;
+    } else {
+        exampleDiv.textContent = 'Select operation to see example';
+        transformDiv.querySelector('input[name="transformation-config"]').placeholder = 'Configuration...';
+    }
+}
+
+function showColumnSelector(transformationId) {
+    alert('Column selector would show available columns from the data source. This requires connecting to the data source first.');
+}
+
+function removeTransformation(id) {
+    document.getElementById(id).remove();
+    transformations = transformations.filter(t => t.id !== id);
+    
+    if (transformations.length === 0) {
+        document.getElementById('transformations-list').innerHTML = '<p class="text-muted">No transformations added yet.</p>';
+    }
+}
+
+function resetForm() {
+    if (confirm('Are you sure you want to reset the form? All data will be lost.')) {
+        document.getElementById('create-pipeline-form').reset();
+        transformations = [];
+        document.getElementById('transformations-list').innerHTML = '<p class="text-muted">No transformations added yet.</p>';
+        document.getElementById('source-config').style.display = 'none';
+    }
+}
+
+function saveDraft() {
+    const formData = collectFormData();
+    localStorage.setItem('pipeline-draft', JSON.stringify(formData));
+    alert('Draft saved locally!');
+}
+
+function collectFormData() {
+    const form = document.getElementById('create-pipeline-form');
+    const formData = new FormData(form);
+    const data = {};
+    
+    // Basic form fields
+    data.name = document.getElementById('pipeline-name').value;
+    data.description = document.getElementById('pipeline-description').value;
+    data.source_type = document.getElementById('source-type').value;
+    data.processing_engine = document.getElementById('processing-engine').value;
+    data.storage_mode = document.getElementById('storage-mode').value;
+    data.destination = document.getElementById('destination-table').value;
+    
+    // Source configuration
+    data.source_config = {};
+    const sourceConfigInputs = document.querySelectorAll('#source-config-fields input, #source-config-fields select, #source-config-fields textarea');
+    sourceConfigInputs.forEach(input => {
+        if (input.type === 'checkbox') {
+            data.source_config[input.name] = input.checked;
+        } else {
+            data.source_config[input.name] = input.value;
+        }
+    });
+    
+    // Transformations
+    data.operations = [];
+    transformations.forEach(t => {
+        const div = document.getElementById(t.id);
+        const type = div.querySelector('select[name="transformation-type"]').value;
+        const config = div.querySelector('input[name="transformation-config"]').value;
+        if (type) {
+            data.operations.push({ type, config });
+        }
+    });
+    
+    return data;
+}
+
+// Handle form submission
+document.getElementById('create-pipeline-form').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    
+    const data = collectFormData();
+    
+    if (!data.name || !data.source_type || !data.processing_engine || !data.destination) {
+        alert('Please fill in all required fields.');
+        return;
+    }
+    
+    try {
+        const response = await axios.post('/api/pipelines', data);
+        alert('Pipeline created successfully!');
+        window.location.href = '/pipelines';
+    } catch (error) {
+        alert(`Error creating pipeline: ${error.response?.data?.error || error.message}`);
+    }
+});
+
+// Handle file upload
+document.getElementById('file-upload').addEventListener('change', async function(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+    
+    const formData = new FormData();
+    formData.append('file', file);
+    
+    try {
+        const response = await axios.post('/api/upload', formData);
+        alert(`File uploaded successfully: ${response.data.filename}`);
+        // Auto-fill some fields based on file type
+        if (response.data.file_type === '.csv') {
+            document.getElementById('source-type').value = 'csv';
+            updateSourceConfig();
+        }
+    } catch (error) {
+        alert(`Error uploading file: ${error.response?.data?.error || error.message}`);
+    }
+});
+
+// Table Browser Functions
+let allTables = [];
+
+function showTableBrowser() {
+    document.getElementById('tableBrowserModal').style.display = 'block';
+    loadDatabaseTables();
+}
+
+function closeTableBrowser() {
+    document.getElementById('tableBrowserModal').style.display = 'none';
+}
+
+async function loadDatabaseTables() {
+    const loadingDiv = document.getElementById('tables-loading');
+    const listDiv = document.getElementById('tables-list');
+    const emptyDiv = document.getElementById('tables-empty');
+    
+    // Show loading
+    loadingDiv.style.display = 'block';
+    listDiv.style.display = 'none';
+    emptyDiv.style.display = 'none';
+    
+    try {
+        const response = await axios.get('/api/database/tables');
+        allTables = response.data.tables || [];
+        
+        if (allTables.length === 0) {
+            loadingDiv.style.display = 'none';
+            emptyDiv.style.display = 'block';
+        } else {
+            renderTables(allTables);
+            loadingDiv.style.display = 'none';
+            listDiv.style.display = 'block';
+        }
+    } catch (error) {
+        console.error('Error loading tables:', error);
+        loadingDiv.style.display = 'none';
+        emptyDiv.style.display = 'block';
+        
+        // Show error message
+        const emptyContent = `
+            <div class="text-center text-muted">
+                <i class="fas fa-exclamation-triangle text-warning"></i>
+                <p>Unable to load database tables.</p>
+                <small>${error.response?.data?.error || error.message || 'Database connection error'}</small>
+            </div>
+        `;
+        emptyDiv.innerHTML = emptyContent;
+    }
+}
+
+function renderTables(tables) {
+    const tbody = document.getElementById('tables-tbody');
+    
+    if (tables.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="5" class="text-center text-muted">No tables match your search</td></tr>';
+        return;
+    }
+    
+    const rowsHtml = tables.map(table => `
+        <tr>
+            <td>
+                <strong>${table.table_name}</strong>
+                ${table.description ? `<br><small class="text-muted">${table.description}</small>` : ''}
+            </td>
+            <td>
+                <span class="badge bg-secondary">${table.schema_name || 'public'}</span>
+            </td>
+            <td>${table.row_count ? table.row_count.toLocaleString() : '—'}</td>
+            <td>${table.column_count || '—'}</td>
+            <td>
+                <button class="btn btn-primary btn-sm" onclick="selectTable('${table.table_name}', '${table.schema_name || 'public'}')">
+                    Select
+                </button>
+                <button class="btn btn-outline-info btn-sm ms-1" onclick="previewTable('${table.table_name}', '${table.schema_name || 'public'}')">
+                    Preview
+                </button>
+            </td>
+        </tr>
+    `).join('');
+    
+    tbody.innerHTML = rowsHtml;
+}
+
+function filterTables() {
+    const searchTerm = document.getElementById('table-search').value.toLowerCase();
+    const filteredTables = allTables.filter(table => 
+        table.table_name.toLowerCase().includes(searchTerm) ||
+        (table.schema_name && table.schema_name.toLowerCase().includes(searchTerm))
+    );
+    renderTables(filteredTables);
+}
+
+function selectTable(tableName, schemaName) {
+    document.getElementById('destination-table').value = tableName;
+    document.getElementById('destination-schema').value = schemaName;
+    closeTableBrowser();
+}
+
+async function previewTable(tableName, schemaName) {
+    try {
+        const response = await axios.get(`/api/database/tables/${schemaName}/${tableName}/preview`);
+        const data = response.data;
+        
+        let previewHtml = `
+            <div class="modal" style="display: block; z-index: 1060;">
+                <div class="modal-dialog modal-xl">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title">Preview: ${schemaName}.${tableName}</h5>
+                            <button type="button" class="btn-close" onclick="this.closest('.modal').style.display='none'"></button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="row mb-3">
+                                <div class="col-md-4">
+                                    <strong>Rows:</strong> ${data.row_count ? data.row_count.toLocaleString() : 'Unknown'}
+                                </div>
+                                <div class="col-md-4">
+                                    <strong>Columns:</strong> ${data.columns ? data.columns.length : 'Unknown'}
+                                </div>
+                                <div class="col-md-4">
+                                    <strong>Last Updated:</strong> ${data.last_updated || 'Unknown'}
+                                </div>
+                            </div>
+        `;
+        
+        if (data.sample_rows && data.sample_rows.length > 0) {
+            previewHtml += `
+                <div class="table-responsive">
+                    <table class="table table-sm table-striped">
+                        <thead>
+                            <tr>
+                                ${data.columns.map(col => `<th>${col.name} <small class="text-muted">(${col.type})</small></th>`).join('')}
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${data.sample_rows.map(row => 
+                                `<tr>${Object.values(row).map(val => `<td>${val || ''}</td>`).join('')}</tr>`
+                            ).join('')}
+                        </tbody>
+                    </table>
+                </div>
+                <small class="text-muted">Showing first ${data.sample_rows.length} rows</small>
+            `;
+        } else {
+            previewHtml += '<p class="text-muted">No sample data available</p>';
+        }
+        
+        previewHtml += `
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-primary" onclick="selectTable('${tableName}', '${schemaName}'); this.closest('.modal').style.display='none'">
+                                Select This Table
+                            </button>
+                            <button type="button" class="btn btn-secondary" onclick="this.closest('.modal').style.display='none'">
+                                Close
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        // Add preview modal to body
+        const previewModal = document.createElement('div');
+        previewModal.innerHTML = previewHtml;
+        document.body.appendChild(previewModal);
+        
+        // Auto-remove after closing
+        setTimeout(() => {
+            const modal = previewModal.querySelector('.modal');
+            if (modal && modal.style.display === 'none') {
+                previewModal.remove();
+            }
+        }, 1000);
+        
+    } catch (error) {
+        alert(`Error loading table preview: ${error.response?.data?.error || error.message}`);
+    }
+}
+
+// Schema loading functions
+async function loadDatabaseSchemas() {
+    try {
+        const response = await axios.get('/api/database/schemas');
+        const schemas = response.data.schemas || ['public'];
+        
+        const schemaSelect = document.getElementById('destination-schema');
+        const currentValue = schemaSelect.value;
+        
+        // Clear existing options
+        schemaSelect.innerHTML = '';
+        
+        // Add schema options
+        schemas.forEach(schema => {
+            const option = document.createElement('option');
+            option.value = schema;
+            option.textContent = schema;
+            if (schema === currentValue || (currentValue === 'public' && schema === 'public')) {
+                option.selected = true;
+            }
+            schemaSelect.appendChild(option);
+        });
+        
+        // If current value not found, select first available
+        if (!schemas.includes(currentValue)) {
+            schemaSelect.value = schemas[0] || 'public';
+        }
+        
+    } catch (error) {
+        console.error('Error loading schemas:', error);
+        // Keep default 'public' option if API fails
+        const schemaSelect = document.getElementById('destination-schema');
+        if (schemaSelect.children.length === 0) {
+            const option = document.createElement('option');
+            option.value = 'public';
+            option.textContent = 'public';
+            option.selected = true;
+            schemaSelect.appendChild(option);
+        }
+    }
+}
+
+async function refreshSchemas() {
+    const button = event.target.closest('button');
+    const originalContent = button.innerHTML;
+    
+    // Show loading
+    button.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+    button.disabled = true;
+    
+    try {
+        await loadDatabaseSchemas();
+        
+        // Success feedback
+        button.innerHTML = '<i class="fas fa-check"></i>';
+        setTimeout(() => {
+            button.innerHTML = originalContent;
+            button.disabled = false;
+        }, 1000);
+        
+    } catch (error) {
+        // Error feedback
+        button.innerHTML = '<i class="fas fa-exclamation-triangle"></i>';
+        setTimeout(() => {
+            button.innerHTML = originalContent;
+            button.disabled = false;
+        }, 2000);
+    }
+}
+
+// Supporting functions for new dropdowns
+function browseFiles(fieldName, acceptTypes) {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = acceptTypes;
+    input.onchange = function() {
+        if (input.files.length > 0) {
+            const field = document.querySelector(`input[name="${fieldName}"]`);
+            field.value = input.files[0].name;
+            field.setAttribute('data-file', input.files[0]);
+        }
+    };
+    input.click();
+}
+
+function refreshS3Buckets(fieldName) {
+    const select = document.querySelector(`select[name="${fieldName}"]`);
+    select.innerHTML = '<option value="">Loading buckets...</option>';
+    
+    // Simulate loading S3 buckets
+    setTimeout(() => {
+        select.innerHTML = `
+            <option value="">Select bucket...</option>
+            <option value="my-data-bucket">my-data-bucket</option>
+            <option value="prod-analytics">prod-analytics</option>
+            <option value="staging-files">staging-files</option>
+            <option value="backup-storage">backup-storage</option>
+        `;
+    }, 1000);
+}
+
+function testPostgreSQLConnection() {
+    // Collect PostgreSQL connection details
+    const host = document.querySelector('input[name="host"]').value;
+    const port = document.querySelector('input[name="port"]').value;
+    const database = document.querySelector('input[name="database"]').value;
+    const username = document.querySelector('input[name="username"]').value;
+    const password = document.querySelector('input[name="password"]').value;
+    
+    if (!host || !port || !database || !username || !password) {
+        alert('Please fill in all database connection fields first');
+        return;
+    }
+    
+    const button = event.target;
+    const originalContent = button.innerHTML;
+    
+    button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Testing...';
+    button.disabled = true;
+    
+    // Test the connection via API
+    const connectionData = { host, port, database, username, password };
+    
+    axios.post('/api/database/test-connection', connectionData)
+        .then(response => {
+            button.innerHTML = '<i class="fas fa-check text-success"></i> Connected';
+            button.classList.remove('btn-outline-success');
+            button.classList.add('btn-success');
+            alert(`Connection successful!\n\nDatabase: ${response.data.database_name}\nVersion: ${response.data.version || 'Unknown'}`);
+        })
+        .catch(error => {
+            button.innerHTML = '<i class="fas fa-times text-danger"></i> Failed';
+            button.classList.remove('btn-outline-success');
+            button.classList.add('btn-danger');
+            
+            const errorMsg = error.response?.data?.error || error.message || 'Connection failed';
+            alert(`Connection failed:\n\n${errorMsg}`);
+        })
+        .finally(() => {
+            setTimeout(() => {
+                button.innerHTML = originalContent;
+                button.disabled = false;
+                button.className = 'btn btn-outline-success';
+            }, 3000);
+        });
+}
+
+// Handle source method toggle
+document.addEventListener('change', function(e) {
+    if (e.target.name === 'source-method') {
+        const uploadDiv = document.getElementById('upload-method');
+        const pathDiv = document.getElementById('path-method');
+        
+        if (e.target.value === 'upload') {
+            uploadDiv.style.display = 'block';
+            pathDiv.style.display = 'none';
+        } else {
+            uploadDiv.style.display = 'none';
+            pathDiv.style.display = 'block';
+        }
+    }
+});
+
+// Handle connection preset changes
+document.addEventListener('change', function(e) {
+    if (e.target.name === 'connection_string') {
+        const customInput = document.querySelector(`input[name="${e.target.name}_custom"]`);
+        if (customInput) {
+            if (e.target.value === 'custom') {
+                customInput.style.display = 'block';
+                customInput.focus();
+            } else {
+                customInput.style.display = 'none';
+            }
+        }
+    }
+});
+
+// Load draft on page load
+document.addEventListener('DOMContentLoaded', function() {
+    // Load schemas immediately
+    loadDatabaseSchemas();
+    
+    const draft = localStorage.getItem('pipeline-draft');
+    if (draft) {
+        // Could implement draft loading here
+        console.log('Draft available:', JSON.parse(draft));
+    }
+});
+</script>
+{% endblock %}

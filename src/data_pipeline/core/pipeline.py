@@ -108,8 +108,8 @@ class Pipeline:
                     'type': 'postgresql',
                     'host': 'localhost',
                     'port': 5432,
-                    'database': 'data_warehouse',
-                    'username': 'postgres',
+                    'database': 'myapp_db',
+                    'username': 'jacob',
                     'password': ''
                 }
             }

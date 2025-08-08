@@ -332,7 +332,7 @@ class SchemaInferrer:
                 constraints['not_null'].append(col_name)
             
             # UNIQUE constraints
-            if col_info['unique_count'] == len(data) and col_name not in col_info.get('is_primary_key_candidate', []):
+            if col_info['unique_count'] == len(data) and not col_info.get('is_primary_key_candidate', False):
                 constraints['unique'].append(col_name)
             
             # CHECK constraints for numeric columns

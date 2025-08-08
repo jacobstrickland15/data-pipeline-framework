@@ -1,0 +1,502 @@
+[
+  {
+    "device_id": "IOT00001",
+    "status": "online",
+    "last_seen": "2025-08-07T15:37:30.486746",
+    "metrics": {
+      "uptime_hours": 56,
+      "data_points_today": 30,
+      "error_count": 2
+    }
+  },
+  {
+    "device_id": "IOT00002",
+    "status": "online",
+    "last_seen": "2025-08-07T05:40:36.371583",
+    "metrics": {
+      "uptime_hours": 72,
+      "data_points_today": 16,
+      "error_count": 4
+    }
+  },
+  {
+    "device_id": "IOT00003",
+    "status": "online",
+    "last_seen": "2025-08-07T00:30:43.305163",
+    "metrics": {
+      "uptime_hours": 89,
+      "data_points_today": 86,
+      "error_count": 4
+    }
+  },
+  {
+    "device_id": "IOT00004",
+    "status": "online",
+    "last_seen": "2025-08-07T09:11:17.924953",
+    "metrics": {
+      "uptime_hours": 58,
+      "data_points_today": 79,
+      "error_count": 4
+    }
+  },
+  {
+    "device_id": "IOT00005",
+    "status": "online",
+    "last_seen": "2025-08-07T18:51:48.673088",
+    "metrics": {
+      "uptime_hours": 91,
+      "data_points_today": 93,
+      "error_count": 2
+    }
+  },
+  {
+    "device_id": "IOT00006",
+    "status": "online",
+    "last_seen": "2025-08-07T03:44:22.820996",
+    "metrics": {
+      "uptime_hours": 76,
+      "data_points_today": 4,
+      "error_count": 3
+    }
+  },
+  {
+    "device_id": "IOT00007",
+    "status": "online",
+    "last_seen": "2025-08-07T00:53:52.864378",
+    "metrics": {
+      "uptime_hours": 151,
+      "data_points_today": 43,
+      "error_count": 3
+    }
+  },
+  {
+    "device_id": "IOT00008",
+    "status": "offline",
+    "last_seen": "2025-08-07T00:05:57.069512",
+    "metrics": {
+      "uptime_hours": 68,
+      "data_points_today": 32,
+      "error_count": 2
+    }
+  },
+  {
+    "device_id": "IOT00009",
+    "status": "offline",
+    "last_seen": "2025-08-06T23:09:59.256916",
+    "metrics": {
+      "uptime_hours": 1,
+      "data_points_today": 65,
+      "error_count": 3
+    }
+  },
+  {
+    "device_id": "IOT00010",
+    "status": "online",
+    "last_seen": "2025-08-07T07:05:27.449058",
+    "metrics": {
+      "uptime_hours": 162,
+      "data_points_today": 8,
+      "error_count": 3
+    }
+  },
+  {
+    "device_id": "IOT00011",
+    "status": "online",
+    "last_seen": "2025-08-07T20:05:52.876258",
+    "metrics": {
+      "uptime_hours": 112,
+      "data_points_today": 63,
+      "error_count": 3
+    }
+  },
+  {
+    "device_id": "IOT00012",
+    "status": "online",
+    "last_seen": "2025-08-07T19:26:28.834745",
+    "metrics": {
+      "uptime_hours": 52,
+      "data_points_today": 30,
+      "error_count": 3
+    }
+  },
+  {
+    "device_id": "IOT00013",
+    "status": "online",
+    "last_seen": "2025-08-07T12:59:42.272088",
+    "metrics": {
+      "uptime_hours": 24,
+      "data_points_today": 69,
+      "error_count": 4
+    }
+  },
+  {
+    "device_id": "IOT00014",
+    "status": "online",
+    "last_seen": "2025-08-07T07:47:12.984736",
+    "metrics": {
+      "uptime_hours": 115,
+      "data_points_today": 30,
+      "error_count": 3
+    }
+  },
+  {
+    "device_id": "IOT00015",
+    "status": "online",
+    "last_seen": "2025-08-07T04:53:41.557306",
+    "metrics": {
+      "uptime_hours": 8,
+      "data_points_today": 76,
+      "error_count": 4
+    }
+  },
+  {
+    "device_id": "IOT00016",
+    "status": "online",
+    "last_seen": "2025-08-07T01:47:00.542029",
+    "metrics": {
+      "uptime_hours": 85,
+      "data_points_today": 18,
+      "error_count": 2
+    }
+  },
+  {
+    "device_id": "IOT00017",
+    "status": "online",
+    "last_seen": "2025-08-07T18:54:30.340988",
+    "metrics": {
+      "uptime_hours": 147,
+      "data_points_today": 55,
+      "error_count": 0
+    }
+  },
+  {
+    "device_id": "IOT00018",
+    "status": "online",
+    "last_seen": "2025-08-07T01:12:35.715368",
+    "metrics": {
+      "uptime_hours": 135,
+      "data_points_today": 14,
+      "error_count": 2
+    }
+  },
+  {
+    "device_id": "IOT00019",
+    "status": "online",
+    "last_seen": "2025-08-07T05:05:54.130773",
+    "metrics": {
+      "uptime_hours": 24,
+      "data_points_today": 90,
+      "error_count": 1
+    }
+  },
+  {
+    "device_id": "IOT00020",
+    "status": "online",
+    "last_seen": "2025-08-07T12:50:59.182300",
+    "metrics": {
+      "uptime_hours": 130,
+      "data_points_today": 40,
+      "error_count": 4
+    }
+  },
+  {
+    "device_id": "IOT00021",
+    "status": "online",
+    "last_seen": "2025-08-07T02:11:12.974356",
+    "metrics": {
+      "uptime_hours": 24,
+      "data_points_today": 71,
+      "error_count": 0
+    }
+  },
+  {
+    "device_id": "IOT00022",
+    "status": "offline",
+    "last_seen": "2025-08-07T05:08:30.798040",
+    "metrics": {
+      "uptime_hours": 118,
+      "data_points_today": 9,
+      "error_count": 1
+    }
+  },
+  {
+    "device_id": "IOT00023",
+    "status": "online",
+    "last_seen": "2025-08-07T19:44:45.045159",
+    "metrics": {
+      "uptime_hours": 4,
+      "data_points_today": 95,
+      "error_count": 3
+    }
+  },
+  {
+    "device_id": "IOT00024",
+    "status": "online",
+    "last_seen": "2025-08-07T17:26:04.343873",
+    "metrics": {
+      "uptime_hours": 61,
+      "data_points_today": 64,
+      "error_count": 2
+    }
+  },
+  {
+    "device_id": "IOT00025",
+    "status": "online",
+    "last_seen": "2025-08-07T04:46:53.275534",
+    "metrics": {
+      "uptime_hours": 47,
+      "data_points_today": 78,
+      "error_count": 4
+    }
+  },
+  {
+    "device_id": "IOT00026",
+    "status": "online",
+    "last_seen": "2025-08-07T09:00:54.678002",
+    "metrics": {
+      "uptime_hours": 146,
+      "data_points_today": 29,
+      "error_count": 0
+    }
+  },
+  {
+    "device_id": "IOT00027",
+    "status": "online",
+    "last_seen": "2025-08-07T15:56:14.318939",
+    "metrics": {
+      "uptime_hours": 9,
+      "data_points_today": 80,
+      "error_count": 0
+    }
+  },
+  {
+    "device_id": "IOT00028",
+    "status": "online",
+    "last_seen": "2025-08-07T19:11:35.479189",
+    "metrics": {
+      "uptime_hours": 76,
+      "data_points_today": 44,
+      "error_count": 0
+    }
+  },
+  {
+    "device_id": "IOT00029",
+    "status": "online",
+    "last_seen": "2025-08-07T02:48:26.902878",
+    "metrics": {
+      "uptime_hours": 63,
+      "data_points_today": 30,
+      "error_count": 1
+    }
+  },
+  {
+    "device_id": "IOT00030",
+    "status": "online",
+    "last_seen": "2025-08-07T04:35:15.919598",
+    "metrics": {
+      "uptime_hours": 54,
+      "data_points_today": 63,
+      "error_count": 4
+    }
+  },
+  {
+    "device_id": "IOT00031",
+    "status": "online",
+    "last_seen": "2025-08-07T04:30:14.266783",
+    "metrics": {
+      "uptime_hours": 7,
+      "data_points_today": 89,
+      "error_count": 1
+    }
+  },
+  {
+    "device_id": "IOT00032",
+    "status": "online",
+    "last_seen": "2025-08-07T10:26:06.878144",
+    "metrics": {
+      "uptime_hours": 161,
+      "data_points_today": 56,
+      "error_count": 2
+    }
+  },
+  {
+    "device_id": "IOT00033",
+    "status": "online",
+    "last_seen": "2025-08-07T04:06:52.370292",
+    "metrics": {
+      "uptime_hours": 85,
+      "data_points_today": 51,
+      "error_count": 3
+    }
+  },
+  {
+    "device_id": "IOT00034",
+    "status": "online",
+    "last_seen": "2025-08-07T09:49:16.714353",
+    "metrics": {
+      "uptime_hours": 92,
+      "data_points_today": 61,
+      "error_count": 2
+    }
+  },
+  {
+    "device_id": "IOT00035",
+    "status": "online",
+    "last_seen": "2025-08-07T22:12:43.320607",
+    "metrics": {
+      "uptime_hours": 105,
+      "data_points_today": 57,
+      "error_count": 3
+    }
+  },
+  {
+    "device_id": "IOT00036",
+    "status": "online",
+    "last_seen": "2025-08-07T10:02:04.642831",
+    "metrics": {
+      "uptime_hours": 38,
+      "data_points_today": 15,
+      "error_count": 5
+    }
+  },
+  {
+    "device_id": "IOT00037",
+    "status": "online",
+    "last_seen": "2025-08-07T03:57:04.770726",
+    "metrics": {
+      "uptime_hours": 142,
+      "data_points_today": 51,
+      "error_count": 1
+    }
+  },
+  {
+    "device_id": "IOT00038",
+    "status": "online",
+    "last_seen": "2025-08-07T09:41:09.588589",
+    "metrics": {
+      "uptime_hours": 102,
+      "data_points_today": 43,
+      "error_count": 0
+    }
+  },
+  {
+    "device_id": "IOT00039",
+    "status": "online",
+    "last_seen": "2025-08-07T17:09:43.331599",
+    "metrics": {
+      "uptime_hours": 17,
+      "data_points_today": 31,
+      "error_count": 4
+    }
+  },
+  {
+    "device_id": "IOT00040",
+    "status": "online",
+    "last_seen": "2025-08-07T11:08:04.765582",
+    "metrics": {
+      "uptime_hours": 21,
+      "data_points_today": 11,
+      "error_count": 3
+    }
+  },
+  {
+    "device_id": "IOT00041",
+    "status": "online",
+    "last_seen": "2025-08-07T01:44:57.602668",
+    "metrics": {
+      "uptime_hours": 143,
+      "data_points_today": 63,
+      "error_count": 2
+    }
+  },
+  {
+    "device_id": "IOT00042",
+    "status": "online",
+    "last_seen": "2025-08-07T21:11:19.831538",
+    "metrics": {
+      "uptime_hours": 34,
+      "data_points_today": 60,
+      "error_count": 0
+    }
+  },
+  {
+    "device_id": "IOT00043",
+    "status": "online",
+    "last_seen": "2025-08-07T02:39:09.418889",
+    "metrics": {
+      "uptime_hours": 64,
+      "data_points_today": 34,
+      "error_count": 0
+    }
+  },
+  {
+    "device_id": "IOT00044",
+    "status": "online",
+    "last_seen": "2025-08-07T20:11:28.035262",
+    "metrics": {
+      "uptime_hours": 165,
+      "data_points_today": 52,
+      "error_count": 1
+    }
+  },
+  {
+    "device_id": "IOT00045",
+    "status": "online",
+    "last_seen": "2025-08-07T00:06:09.283418",
+    "metrics": {
+      "uptime_hours": 167,
+      "data_points_today": 76,
+      "error_count": 3
+    }
+  },
+  {
+    "device_id": "IOT00046",
+    "status": "online",
+    "last_seen": "2025-08-07T05:56:46.986013",
+    "metrics": {
+      "uptime_hours": 50,
+      "data_points_today": 78,
+      "error_count": 5
+    }
+  },
+  {
+    "device_id": "IOT00047",
+    "status": "online",
+    "last_seen": "2025-08-07T18:29:26.223154",
+    "metrics": {
+      "uptime_hours": 150,
+      "data_points_today": 60,
+      "error_count": 0
+    }
+  },
+  {
+    "device_id": "IOT00048",
+    "status": "online",
+    "last_seen": "2025-08-07T04:16:43.040693",
+    "metrics": {
+      "uptime_hours": 92,
+      "data_points_today": 17,
+      "error_count": 3
+    }
+  },
+  {
+    "device_id": "IOT00049",
+    "status": "online",
+    "last_seen": "2025-08-06T22:47:45.145424",
+    "metrics": {
+      "uptime_hours": 19,
+      "data_points_today": 59,
+      "error_count": 2
+    }
+  },
+  {
+    "device_id": "IOT00050",
+    "status": "online",
+    "last_seen": "2025-08-07T01:54:19.479633",
+    "metrics": {
+      "uptime_hours": 105,
+      "data_points_today": 77,
+      "error_count": 3
+    }
+  }
+]

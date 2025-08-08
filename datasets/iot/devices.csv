@@ -1,0 +1,101 @@
+device_id,device_name,device_type,location,building,floor,room,manufacturer,model,firmware_version,install_date,last_maintenance,is_active,battery_level
+IOT00001,Energy Sensor 1,Pressure,"6367 Jordan Glen Suite 164, West Jodi, NM 69071",Building C,5,Room 349,TechSensors,Model 163-WE,2.1.3,2025-04-07,2025-08-06,True,16.0
+IOT00002,Temperature Sensor 2,Temperature,"9723 Brown Island Suite 600, Kingfort, VI 37724",Building B,4,Room 843,SmartDevices,Model 339-Zw,1.1.9,2024-01-07,2025-08-06,True,62.0
+IOT00003,Pressure Sensor 3,Energy,"0412 Scott Mountains Suite 086, Kimberlybury, IL 39342",Building A,3,Room 889,TechSensors,Model 265-Qf,5.3.7,2025-05-17,2025-08-06,True,43.0
+IOT00004,Light Sensor 4,Light,"54142 Fox Plains Apt. 099, West Barbara, MS 52241",Building F,2,Room 969,SmartDevices,Model 618-Ek,5.6.6,2024-01-16,2025-08-06,True,15.0
+IOT00005,Temperature Sensor 5,Light,"60288 Parsons Forge Apt. 059, Kathrynburgh, DC 21892",Building B,2,Room 868,IoTCorp,Model 648-zX,5.0.9,2024-12-09,2025-08-06,True,28.0
+IOT00006,Light Sensor 6,Air Quality,"7642 Charles Forges, Tiffanytown, WV 46010",Building D,3,Room 104,IoTCorp,Model 649-Ls,1.2.2,2023-11-28,2025-08-06,True,77.0
+IOT00007,Pressure Sensor 7,Motion,"43143 Freeman Lodge, Josephfurt, AZ 65081",Building A,4,Room 784,SmartDevices,Model 696-dX,2.1.7,2024-04-04,2025-08-06,True,
+IOT00008,Pressure Sensor 8,Energy,"763 May Junction Apt. 672, Charlesbury, CO 23529",Building D,1,Room 971,SensorTech,Model 018-si,4.4.4,2023-10-05,2025-08-06,False,52.0
+IOT00009,Humidity Sensor 9,Light,"09199 Jennifer Mountains, Lake Matthewside, ME 35558",Building F,9,Room 235,TechSensors,Model 935-XJ,1.2.5,2023-09-23,2025-08-06,False,
+IOT00010,Energy Sensor 10,Energy,"99782 Danny Springs, South Gary, VT 69455",Building C,8,Room 600,SensorTech,Model 886-Gd,3.6.0,2024-11-26,2025-08-06,True,36.0
+IOT00011,Air Quality Sensor 11,Light,"63144 Michelle Mountain, New Todd, CO 58896",Building C,8,Room 849,IoTCorp,Model 743-st,4.3.7,2025-04-27,2025-08-06,True,16.0
+IOT00012,Motion Sensor 12,Motion,"447 Pierce Track, Lake Apriltown, AR 46428",Building F,4,Room 211,SensorTech,Model 635-nE,1.8.5,2024-10-03,2025-08-06,True,43.0
+IOT00013,Temperature Sensor 13,Motion,"6954 Roger Parkways Suite 903, New Eric, ME 74630",Building D,9,Room 516,SensorTech,Model 315-Tf,5.8.4,2025-06-18,2025-08-06,True,86.0
+IOT00014,Pressure Sensor 14,Energy,"038 Sweeney Junction, East Victoriafort, CO 72805",Building C,10,Room 599,SmartDevices,Model 150-rS,2.9.7,2024-06-02,2025-08-06,True,17.0
+IOT00015,Temperature Sensor 15,Motion,"USNS Johnson, FPO AP 84517",Building B,8,Room 194,TechSensors,Model 217-uD,2.0.0,2024-08-09,2025-08-06,True,
+IOT00016,Light Sensor 16,Humidity,"93024 Brown Shore Suite 013, Chenhaven, TX 37090",Building E,6,Room 838,SensorTech,Model 335-hy,3.9.3,2024-07-04,2025-08-06,True,98.0
+IOT00017,Motion Sensor 17,Pressure,"64948 Beltran Ports Suite 416, Jenniferville, AK 11286",Building B,8,Room 238,IoTCorp,Model 409-MA,1.6.3,2023-11-30,2025-08-06,True,58.0
+IOT00018,Temperature Sensor 18,Air Quality,"989 Manuel Harbor, Jeromeville, NM 72955",Building A,5,Room 474,SmartDevices,Model 322-Mp,2.7.7,2024-07-27,2025-08-06,True,
+IOT00019,Light Sensor 19,Temperature,"2022 Carolyn Flat, East Gregoryburgh, NV 26349",Building E,2,Room 161,TechSensors,Model 472-xu,2.2.9,2025-02-04,2025-08-06,True,44.0
+IOT00020,Air Quality Sensor 20,Humidity,"229 Christopher Street Suite 385, Stevensville, DE 55581",Building E,8,Room 985,TechSensors,Model 499-XY,2.0.5,2024-07-02,2025-08-06,True,98.0
+IOT00021,Energy Sensor 21,Energy,"Unit 1188 Box 0283, DPO AA 52491",Building A,7,Room 759,TechSensors,Model 667-CQ,5.4.5,2024-03-12,2025-08-06,True,
+IOT00022,Humidity Sensor 22,Light,"41722 West Greens Suite 152, New Lisa, NC 59807",Building F,8,Room 198,SensorTech,Model 563-Fc,4.1.2,2023-08-14,2025-08-06,False,34.0
+IOT00023,Motion Sensor 23,Pressure,"0467 Adam Pass, Port Michellechester, UT 47490",Building E,8,Room 492,IoTCorp,Model 725-SF,3.7.7,2024-06-18,2025-08-06,True,
+IOT00024,Motion Sensor 24,Humidity,"439 Stevens Forge Suite 497, Monroeville, KY 74418",Building D,1,Room 356,SmartDevices,Model 854-lt,5.1.6,2025-07-31,2025-08-06,True,
+IOT00025,Air Quality Sensor 25,Humidity,"78413 George Plaza, Perkinsstad, MS 56758",Building C,3,Room 822,SensorTech,Model 924-Oa,3.3.4,2024-12-23,2025-08-06,True,
+IOT00026,Pressure Sensor 26,Humidity,"25526 Young Roads Suite 599, Wilsonstad, AL 50978",Building D,1,Room 280,SensorTech,Model 877-YQ,1.7.1,2023-09-05,2025-08-06,True,14.0
+IOT00027,Temperature Sensor 27,Pressure,"20654 Barbara Shoals, Port Brandon, ME 52522",Building C,5,Room 122,TechSensors,Model 063-sg,4.4.5,2023-12-14,2025-08-06,True,59.0
+IOT00028,Light Sensor 28,Temperature,"0291 Daniel Summit, Yolandaberg, AR 13894",Building F,6,Room 551,SensorTech,Model 639-WW,2.7.4,2023-12-30,2025-08-06,True,24.0
+IOT00029,Motion Sensor 29,Motion,"467 Martinez Route Suite 042, New Austinport, PW 82674",Building C,9,Room 809,IoTCorp,Model 787-XF,4.9.5,2025-05-26,2025-08-06,True,51.0
+IOT00030,Energy Sensor 30,Energy,"605 Erik Estate, Davidbury, NH 30864",Building B,6,Room 841,SensorTech,Model 220-uO,2.1.3,2024-06-13,2025-08-06,True,84.0
+IOT00031,Energy Sensor 31,Motion,"Unit 9720 Box 0308, DPO AE 60373",Building F,5,Room 335,SmartDevices,Model 184-UD,1.1.3,2024-12-18,2025-08-06,True,
+IOT00032,Pressure Sensor 32,Temperature,"3583 Catherine Gateway Suite 318, Maryhaven, NY 77097",Building A,10,Room 851,TechSensors,Model 497-cO,5.3.1,2024-05-31,2025-08-06,True,
+IOT00033,Humidity Sensor 33,Temperature,"76152 Michael Falls, Jeremymouth, PW 56412",Building D,10,Room 932,SmartDevices,Model 755-NN,2.1.3,2024-05-23,2025-08-06,True,
+IOT00034,Motion Sensor 34,Humidity,"4658 Taylor Mount, Smithfurt, MP 63599",Building E,9,Room 127,TechSensors,Model 198-dC,4.4.2,2024-02-07,2025-08-06,True,33.0
+IOT00035,Temperature Sensor 35,Light,"2435 Dennis Valley Apt. 626, Lake Dana, SD 66128",Building C,10,Room 553,SmartDevices,Model 066-kV,2.3.3,2024-05-04,2025-08-06,True,55.0
+IOT00036,Energy Sensor 36,Motion,"202 William Route, Lake Matthew, HI 30747",Building F,5,Room 597,SmartDevices,Model 328-vQ,4.7.3,2025-03-22,2025-08-06,True,19.0
+IOT00037,Air Quality Sensor 37,Temperature,"81624 Edwin Lane, Meyerbury, AK 79517",Building C,8,Room 961,IoTCorp,Model 046-Dg,2.2.1,2024-10-14,2025-08-06,True,
+IOT00038,Motion Sensor 38,Light,"592 Glenn Mountains, New Stacy, RI 72254",Building C,9,Room 311,SensorTech,Model 526-Zi,2.8.6,2024-01-11,2025-08-06,True,43.0
+IOT00039,Motion Sensor 39,Light,"Unit 2432 Box 0107, DPO AE 83547",Building C,8,Room 249,SmartDevices,Model 080-Cq,3.7.1,2023-12-06,2025-08-06,True,
+IOT00040,Temperature Sensor 40,Energy,"2137 Johns Grove Suite 621, Lake Tommytown, MD 58331",Building E,4,Room 301,IoTCorp,Model 516-Rc,2.4.1,2024-03-14,2025-08-06,True,
+IOT00041,Temperature Sensor 41,Humidity,"943 David Mountains, West Cassandramouth, MO 93547",Building D,7,Room 307,SensorTech,Model 475-NQ,1.1.1,2025-04-04,2025-08-06,True,67.0
+IOT00042,Temperature Sensor 42,Humidity,"PSC 6888, Box 7740, APO AP 14590",Building D,9,Room 693,SensorTech,Model 404-Sh,3.7.1,2024-08-18,2025-08-06,True,
+IOT00043,Motion Sensor 43,Humidity,"5206 Amanda Key, Brucemouth, TX 04768",Building A,4,Room 597,TechSensors,Model 541-GX,1.8.5,2024-11-26,2025-08-06,True,48.0
+IOT00044,Light Sensor 44,Pressure,"90244 Dunn Lodge, Port Andreamouth, GA 39268",Building E,4,Room 701,TechSensors,Model 785-Xn,2.7.1,2024-12-09,2025-08-06,True,
+IOT00045,Pressure Sensor 45,Temperature,"7526 Larson Parks, New Michael, VI 10132",Building C,2,Room 872,SmartDevices,Model 409-Xm,5.3.6,2025-04-11,2025-08-06,True,12.0
+IOT00046,Temperature Sensor 46,Energy,"548 Thompson Ford, West Sharonberg, IA 60568",Building A,8,Room 516,TechSensors,Model 586-ZH,1.9.1,2024-06-25,2025-08-06,True,18.0
+IOT00047,Pressure Sensor 47,Air Quality,"95583 Dustin Branch Suite 172, Frenchchester, TX 59913",Building F,1,Room 357,SensorTech,Model 764-JF,4.1.3,2024-12-20,2025-08-06,True,
+IOT00048,Motion Sensor 48,Energy,"3877 Eric Skyway, West Danielhaven, MT 07083",Building F,2,Room 897,TechSensors,Model 537-bW,2.0.1,2025-07-12,2025-08-06,True,10.0
+IOT00049,Temperature Sensor 49,Light,"05303 Smith Glens, Lindseyland, ID 85467",Building B,1,Room 468,TechSensors,Model 211-iH,5.5.7,2024-09-02,2025-08-06,True,35.0
+IOT00050,Air Quality Sensor 50,Air Quality,"9952 Cruz Island, Christopherville, IL 11016",Building B,9,Room 550,IoTCorp,Model 384-ua,3.2.9,2024-11-06,2025-08-06,True,93.0
+IOT00051,Energy Sensor 51,Air Quality,"2225 Pamela Motorway, Matthewside, DE 61686",Building A,2,Room 638,IoTCorp,Model 906-Ns,2.4.6,2025-02-16,2025-08-06,True,63.0
+IOT00052,Air Quality Sensor 52,Light,"0802 Conway Well, North Elizabeth, AK 60122",Building D,10,Room 975,SmartDevices,Model 927-zR,4.7.8,2025-01-04,2025-08-06,True,
+IOT00053,Humidity Sensor 53,Energy,"Unit 7074 Box 3589, DPO AP 53075",Building A,6,Room 194,IoTCorp,Model 937-Uk,2.6.4,2024-09-13,2025-08-06,True,
+IOT00054,Light Sensor 54,Air Quality,"7257 Ross Avenue Apt. 270, West Erika, NC 36699",Building E,5,Room 670,SmartDevices,Model 229-mU,5.5.0,2025-02-26,2025-08-06,True,
+IOT00055,Humidity Sensor 55,Temperature,"823 Allison Prairie Suite 150, North Kimberly, KY 79811",Building E,1,Room 146,SensorTech,Model 399-Ka,1.3.6,2024-01-15,2025-08-06,True,99.0
+IOT00056,Temperature Sensor 56,Air Quality,"3575 Christine Common, New Kevin, ID 94801",Building A,7,Room 450,TechSensors,Model 580-kN,5.9.1,2025-06-09,2025-08-06,True,93.0
+IOT00057,Light Sensor 57,Air Quality,"PSC 3563, Box 4612, APO AE 82725",Building A,10,Room 208,SmartDevices,Model 727-fW,1.8.0,2024-12-17,2025-08-06,True,
+IOT00058,Humidity Sensor 58,Pressure,"9682 Jared Walks, East Matthew, NY 32063",Building D,8,Room 977,TechSensors,Model 605-Rp,4.4.3,2025-03-14,2025-08-06,True,11.0
+IOT00059,Light Sensor 59,Motion,"10484 Collins Manor, Jamesmouth, WA 66651",Building A,2,Room 553,SensorTech,Model 405-kR,3.2.5,2025-06-21,2025-08-06,True,11.0
+IOT00060,Energy Sensor 60,Pressure,"9491 Garrett Shoals, Hoodstad, NE 37386",Building F,4,Room 804,SmartDevices,Model 708-Vq,4.5.8,2025-07-11,2025-08-06,True,24.0
+IOT00061,Temperature Sensor 61,Humidity,"11356 Young Plains Apt. 699, Christinaburgh, AL 25758",Building B,7,Room 983,SmartDevices,Model 060-St,1.9.9,2023-10-09,2025-08-06,True,
+IOT00062,Motion Sensor 62,Temperature,"3591 Bates Circle Suite 041, West Joshua, MA 09219",Building B,10,Room 961,TechSensors,Model 416-Jz,4.0.1,2024-05-15,2025-08-06,False,
+IOT00063,Humidity Sensor 63,Temperature,"Unit 4540 Box 5343, DPO AP 18710",Building D,2,Room 356,IoTCorp,Model 529-zG,3.8.3,2023-12-12,2025-08-06,True,22.0
+IOT00064,Pressure Sensor 64,Energy,"430 Robert Port Suite 862, Jamesburgh, MH 28822",Building A,9,Room 427,TechSensors,Model 743-Sm,3.9.3,2025-06-10,2025-08-06,False,94.0
+IOT00065,Pressure Sensor 65,Air Quality,"019 Hobbs Forks Apt. 480, Port Paulaberg, NV 62528",Building C,10,Room 268,TechSensors,Model 047-Hq,3.9.2,2024-03-23,2025-08-06,True,
+IOT00066,Pressure Sensor 66,Energy,"USS Cruz, FPO AP 25232",Building B,8,Room 624,TechSensors,Model 406-zl,3.6.6,2025-07-11,2025-08-06,True,60.0
+IOT00067,Energy Sensor 67,Motion,"5233 Natalie Shoal, Johnsonfort, TN 94397",Building D,1,Room 192,SmartDevices,Model 380-Be,3.0.7,2024-08-26,2025-08-06,True,35.0
+IOT00068,Air Quality Sensor 68,Air Quality,"79606 Julie Pines Apt. 164, Knoxborough, MT 79878",Building A,8,Room 624,IoTCorp,Model 848-QT,5.0.0,2025-01-26,2025-08-06,True,88.0
+IOT00069,Light Sensor 69,Motion,"017 Robin Ports, Lake Davidview, AK 77076",Building C,6,Room 821,SmartDevices,Model 768-KJ,1.7.4,2024-02-25,2025-08-06,True,57.0
+IOT00070,Humidity Sensor 70,Motion,"83596 Daniel Mountain Apt. 646, Port Brian, CA 39884",Building B,4,Room 451,IoTCorp,Model 081-tH,2.9.3,2024-01-13,2025-08-06,True,
+IOT00071,Light Sensor 71,Air Quality,"3596 Elizabeth Walks, Harrisfort, OR 97116",Building A,9,Room 966,SmartDevices,Model 347-xH,2.4.1,2025-04-26,2025-08-06,True,24.0
+IOT00072,Air Quality Sensor 72,Humidity,"77627 Charles Via, South Nicholas, TN 18482",Building E,9,Room 528,SensorTech,Model 799-ji,4.4.1,2023-10-25,2025-08-06,True,83.0
+IOT00073,Pressure Sensor 73,Humidity,"31561 Henderson Isle Apt. 261, Jeremyport, VI 31765",Building A,7,Room 166,SmartDevices,Model 229-Gq,4.6.0,2024-01-30,2025-08-06,True,56.0
+IOT00074,Temperature Sensor 74,Light,"USNV Bates, FPO AA 81489",Building E,5,Room 715,SmartDevices,Model 133-PO,3.9.0,2024-12-25,2025-08-06,True,
+IOT00075,Temperature Sensor 75,Humidity,"176 Perez Divide Apt. 778, Ginaport, FM 11216",Building D,9,Room 368,IoTCorp,Model 730-cJ,3.5.0,2024-01-22,2025-08-06,True,32.0
+IOT00076,Light Sensor 76,Energy,"9470 Debbie Point Suite 641, Martinezchester, PW 99595",Building C,1,Room 713,SensorTech,Model 356-Iv,2.7.9,2025-07-26,2025-08-06,True,20.0
+IOT00077,Light Sensor 77,Air Quality,"5616 Pamela Hill, East Jessicafort, NH 62869",Building E,8,Room 677,SensorTech,Model 258-KX,5.7.7,2023-11-22,2025-08-06,True,46.0
+IOT00078,Motion Sensor 78,Humidity,"315 Nathaniel Mountains, Collierstad, WY 28986",Building E,8,Room 433,SmartDevices,Model 025-aX,5.8.2,2024-06-03,2025-08-06,True,
+IOT00079,Temperature Sensor 79,Light,"USNV Weber, FPO AE 11875",Building E,9,Room 712,SensorTech,Model 556-Xv,2.2.4,2024-06-23,2025-08-06,True,84.0
+IOT00080,Air Quality Sensor 80,Humidity,"43803 Brian Mountain, Jamesborough, VI 23376",Building E,4,Room 801,SmartDevices,Model 249-Od,4.6.6,2023-12-18,2025-08-06,True,
+IOT00081,Motion Sensor 81,Air Quality,"28567 Long Wells Apt. 997, Port Jeffreyfort, MH 22161",Building F,9,Room 467,TechSensors,Model 837-xa,3.7.4,2025-03-25,2025-08-06,True,
+IOT00082,Motion Sensor 82,Light,"PSC 9716, Box 3028, APO AE 49147",Building E,10,Room 221,SensorTech,Model 698-uG,3.4.5,2023-12-21,2025-08-06,True,
+IOT00083,Light Sensor 83,Energy,"PSC 2914, Box 9496, APO AP 45207",Building E,6,Room 699,IoTCorp,Model 063-Ez,1.5.5,2024-11-20,2025-08-06,True,55.0
+IOT00084,Light Sensor 84,Temperature,"760 Francis Points Apt. 532, Huertahaven, AL 38716",Building B,2,Room 203,IoTCorp,Model 636-bT,4.4.7,2024-01-11,2025-08-06,True,37.0
+IOT00085,Motion Sensor 85,Humidity,"Unit 8752 Box 9782, DPO AE 94739",Building A,5,Room 481,SensorTech,Model 067-XC,1.1.6,2025-07-17,2025-08-06,True,
+IOT00086,Temperature Sensor 86,Energy,"502 Phelps Row, Newtonside, IL 13354",Building B,7,Room 957,SensorTech,Model 749-lM,1.4.7,2025-01-31,2025-08-06,True,44.0
+IOT00087,Pressure Sensor 87,Motion,"90010 Wendy Court Apt. 402, New Leslieville, IA 91178",Building F,2,Room 220,TechSensors,Model 012-kS,1.9.5,2024-11-25,2025-08-06,True,10.0
+IOT00088,Light Sensor 88,Light,"Unit 8192 Box 9178, DPO AE 49459",Building C,10,Room 640,TechSensors,Model 780-br,4.0.7,2024-09-08,2025-08-06,True,63.0
+IOT00089,Humidity Sensor 89,Energy,"607 Shannon Crossroad, Parkerbury, MA 03554",Building C,1,Room 169,TechSensors,Model 595-zg,5.8.4,2025-05-18,2025-08-06,True,77.0
+IOT00090,Humidity Sensor 90,Motion,"165 Phillips Summit Apt. 279, South Stacey, FM 19840",Building D,9,Room 637,IoTCorp,Model 300-Qc,1.6.3,2023-09-13,2025-08-06,True,28.0
+IOT00091,Pressure Sensor 91,Humidity,"5212 Nicholas Place, Port Larry, CA 27001",Building A,6,Room 912,SmartDevices,Model 129-Ho,3.4.8,2025-03-26,2025-08-06,True,89.0
+IOT00092,Air Quality Sensor 92,Light,"60616 Williams Spur, Bobbyburgh, SD 06884",Building F,10,Room 164,SensorTech,Model 853-Fp,4.5.2,2023-11-08,2025-08-06,True,
+IOT00093,Pressure Sensor 93,Humidity,"7639 Melissa Shoals, Rebeccahaven, FL 22055",Building B,8,Room 354,TechSensors,Model 882-Fo,2.8.2,2025-01-13,2025-08-06,True,
+IOT00094,Temperature Sensor 94,Temperature,"USNS Novak, FPO AA 40818",Building B,10,Room 605,IoTCorp,Model 181-fp,2.9.1,2025-07-26,2025-08-06,True,36.0
+IOT00095,Temperature Sensor 95,Light,"USNS Oneill, FPO AP 02067",Building E,5,Room 837,IoTCorp,Model 950-Fj,5.6.9,2024-06-28,2025-08-06,True,28.0
+IOT00096,Humidity Sensor 96,Light,"65058 Miller Expressway, Blakehaven, DC 68609",Building B,1,Room 771,IoTCorp,Model 812-Kq,3.1.8,2024-07-25,2025-08-06,True,61.0
+IOT00097,Humidity Sensor 97,Light,"89784 Goodwin Common, South Laurie, MA 96637",Building A,9,Room 890,IoTCorp,Model 127-ZO,2.1.1,2024-02-17,2025-08-06,True,39.0
+IOT00098,Temperature Sensor 98,Temperature,"509 Gail Loop, West Brandonview, MN 72967",Building E,9,Room 190,SmartDevices,Model 913-qy,1.6.9,2024-03-17,2025-08-06,True,
+IOT00099,Energy Sensor 99,Motion,"22392 Peter Mount, East Kyle, AK 97335",Building E,2,Room 641,SmartDevices,Model 397-Ro,3.5.6,2023-08-23,2025-08-06,True,82.0
+IOT00100,Motion Sensor 100,Air Quality,"247 Hudson Branch Apt. 953, Sheltonborough, OK 33137",Building D,4,Room 106,TechSensors,Model 610-hv,4.9.2,2024-01-10,2025-08-06,True,

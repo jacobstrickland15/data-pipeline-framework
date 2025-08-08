@@ -1,0 +1,1 @@
+"""Performance optimization components for the data pipeline framework."""

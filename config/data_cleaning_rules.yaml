@@ -1,0 +1,43 @@
+# Data Cleaning Configuration
+# Automatically fixes common data quality issues
+
+# Missing value handling strategies
+missing_values:
+  email: "default"  # Use noemail@unknown.com for missing emails
+  phone: "default"  # Use 000-000-0000 for missing phones  
+  name: "default"   # Use "Unknown" for missing names
+  address: "forward_fill"  # Use previous valid address
+  customer_id: "drop"  # Drop rows with missing customer IDs
+
+# Phone number standardization
+phone_columns:
+  - "phone"
+  - "mobile"
+  - "contact_number"
+
+# Email validation and fixing
+email_columns:
+  - "email"
+  - "contact_email"
+  - "user_email"
+
+email_strategy: "fix_common"  # Try to fix common typos
+
+# Duplicate removal
+remove_duplicates:
+  subset: ["customer_id"]  # Remove duplicates based on customer_id
+  keep: "first"  # Keep the first occurrence
+
+# Additional cleaning rules
+format_standardization:
+  phone_format: "(XXX) XXX-XXXX"
+  email_domain_fixes:
+    - "gmial.com -> gmail.com"
+    - "yahooo.com -> yahoo.com" 
+    - "hotmial.com -> hotmail.com"
+
+# Quality thresholds
+quality_thresholds:
+  completeness_min: 90  # Minimum 90% completeness
+  validity_min: 95      # Minimum 95% valid formats
+  uniqueness_min: 99    # Maximum 1% duplicates

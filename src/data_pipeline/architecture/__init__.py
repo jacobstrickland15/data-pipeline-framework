@@ -1,0 +1,1 @@
+"""Enterprise architecture components for the data pipeline framework."""

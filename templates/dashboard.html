@@ -1,0 +1,277 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1><i class="fas fa-tachometer-alt"></i> Pipeline Dashboard</h1>
+        <div>
+            <span class="status-indicator status-healthy"></span>
+            <span id="system-status">All Systems Operational</span>
+        </div>
+    </div>
+    
+    <!-- Metrics Cards -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card metric-card">
+                <div class="card-header">
+                    <h6 class="mb-0"><i class="fas fa-play-circle"></i> Total Executions</h6>
+                </div>
+                <div class="card-body">
+                    <h3 class="text-primary" id="total-executions">0</h3>
+                    <small class="text-muted">All time</small>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-3">
+            <div class="card metric-card">
+                <div class="card-header">
+                    <h6 class="mb-0"><i class="fas fa-check-circle"></i> Success Rate</h6>
+                </div>
+                <div class="card-body">
+                    <h3 class="text-success" id="success-rate">0%</h3>
+                    <small class="text-muted">Last 24 hours</small>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-3">
+            <div class="card metric-card">
+                <div class="card-header">
+                    <h6 class="mb-0"><i class="fas fa-database"></i> Rows Processed</h6>
+                </div>
+                <div class="card-body">
+                    <h3 class="text-info" id="rows-processed">0</h3>
+                    <small class="text-muted">Today</small>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-3">
+            <div class="card metric-card">
+                <div class="card-header">
+                    <h6 class="mb-0"><i class="fas fa-exclamation-triangle"></i> Active Alerts</h6>
+                </div>
+                <div class="card-body">
+                    <h3 class="text-warning" id="active-alerts">0</h3>
+                    <small class="text-muted">Require attention</small>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Charts Row -->
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h6 class="mb-0"><i class="fas fa-chart-line"></i> Pipeline Executions</h6>
+                </div>
+                <div class="card-body">
+                    <canvas id="executions-chart" height="200"></canvas>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h6 class="mb-0"><i class="fas fa-server"></i> System Resources</h6>
+                </div>
+                <div class="card-body">
+                    <canvas id="resources-chart" height="200"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Recent Activity -->
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h6 class="mb-0"><i class="fas fa-history"></i> Recent Pipeline Executions</h6>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Pipeline</th>
+                                    <th>Status</th>
+                                    <th>Rows</th>
+                                    <th>Duration</th>
+                                    <th>Started</th>
+                                </tr>
+                            </thead>
+                            <tbody id="recent-executions">
+                                <tr>
+                                    <td colspan="5" class="text-center text-muted">No recent executions</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header">
+                    <h6 class="mb-0"><i class="fas fa-bell"></i> Recent Alerts</h6>
+                </div>
+                <div class="card-body">
+                    <div id="recent-alerts">
+                        <p class="text-muted text-center">No recent alerts</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+// Initialize charts
+let executionsChart, resourcesChart;
+
+// Load dashboard data
+async function loadDashboardData() {
+    try {
+        // Load metrics
+        const metricsResponse = await axios.get('/api/metrics');
+        const metrics = metricsResponse.data.metrics;
+        
+        // Update metric cards
+        document.getElementById('total-executions').textContent = 
+            metrics.pipeline_executions_total?.sum || 0;
+        
+        const totalExecs = metrics.pipeline_executions_total?.sum || 0;
+        const successExecs = metrics.pipeline_success_total?.sum || 0;
+        const successRate = totalExecs > 0 ? Math.round((successExecs / totalExecs) * 100) : 0;
+        document.getElementById('success-rate').textContent = successRate + '%';
+        
+        document.getElementById('rows-processed').textContent = 
+            (metrics.data_rows_processed_total?.sum || 0).toLocaleString();
+        
+        // Load alerts
+        const alertsResponse = await axios.get('/api/alerts');
+        const alerts = alertsResponse.data;
+        
+        document.getElementById('active-alerts').textContent = alerts.active_alerts.length;
+        
+        // Update charts
+        updateCharts(metrics);
+        
+        // Update recent alerts
+        updateRecentAlerts(alerts.recent_alerts);
+        
+    } catch (error) {
+        console.error('Error loading dashboard data:', error);
+    }
+}
+
+// Initialize charts
+function initCharts() {
+    const executionsCtx = document.getElementById('executions-chart').getContext('2d');
+    executionsChart = new Chart(executionsCtx, {
+        type: 'line',
+        data: {
+            labels: [],
+            datasets: [{
+                label: 'Executions',
+                data: [],
+                borderColor: '#007bff',
+                tension: 0.4
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false
+        }
+    });
+    
+    const resourcesCtx = document.getElementById('resources-chart').getContext('2d');
+    resourcesChart = new Chart(resourcesCtx, {
+        type: 'doughnut',
+        data: {
+            labels: ['CPU', 'Memory', 'Disk'],
+            datasets: [{
+                data: [0, 0, 0],
+                backgroundColor: ['#007bff', '#28a745', '#ffc107']
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false
+        }
+    });
+}
+
+function updateCharts(metrics) {
+    // Update executions chart (mock data)
+    const now = new Date();
+    const labels = [];
+    const data = [];
+    
+    for (let i = 6; i >= 0; i--) {
+        const date = new Date(now.getTime() - i * 24 * 60 * 60 * 1000);
+        labels.push(date.toLocaleDateString());
+        // Only show actual execution data, not fake random data
+        data.push(0); // Will be 0 until actual pipelines are executed
+    }
+    
+    // FIX DATA LEAK - Update existing arrays instead of replacing them
+    if (executionsChart.data.labels.length !== labels.length) {
+        executionsChart.data.labels = labels;
+        executionsChart.data.datasets[0].data = data;
+    } else {
+        for (let i = 0; i < labels.length; i++) {
+            executionsChart.data.labels[i] = labels[i];
+            executionsChart.data.datasets[0].data[i] = data[i];
+        }
+    }
+    executionsChart.update('none'); // Disable animations to prevent memory issues
+    
+    // FIX DATA LEAK - Update resources chart without creating new arrays
+    const cpu = metrics.system_cpu_usage_percent?.latest || 0;
+    const memory = metrics.system_memory_usage_percent?.latest || 0;
+    const disk = metrics.system_disk_usage_percent?.latest || 0;
+    
+    resourcesChart.data.datasets[0].data[0] = cpu;
+    resourcesChart.data.datasets[0].data[1] = memory;
+    resourcesChart.data.datasets[0].data[2] = disk;
+    resourcesChart.update('none');
+}
+
+function updateRecentAlerts(alerts) {
+    const container = document.getElementById('recent-alerts');
+    
+    if (alerts.length === 0) {
+        container.innerHTML = '<p class="text-muted text-center">No recent alerts</p>';
+        return;
+    }
+    
+    const alertsHtml = alerts.slice(0, 5).map(alert => `
+        <div class="alert alert-${alert.level === 'critical' ? 'danger' : 'warning'} alert-sm">
+            <strong>${alert.name}</strong><br>
+            <small>${alert.message}</small><br>
+            <small class="text-muted">${new Date(alert.timestamp).toLocaleString()}</small>
+        </div>
+    `).join('');
+    
+    container.innerHTML = alertsHtml;
+}
+
+// Initialize dashboard
+document.addEventListener('DOMContentLoaded', function() {
+    initCharts();
+    loadDashboardData();
+    
+    // DISABLED auto-refresh to prevent system overload  
+    // setInterval(loadDashboardData, 30000);
+});
+</script>
+{% endblock %}

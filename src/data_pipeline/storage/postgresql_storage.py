@@ -21,8 +21,8 @@ class PostgreSQLStorage(DataStorage):
         # Database connection parameters
         self.host = config.get('host', 'localhost')
         self.port = config.get('port', 5432)
-        self.database = config.get('database', 'data_warehouse')
-        self.username = config.get('username', 'postgres')
+        self.database = config.get('database', 'myapp_db')
+        self.username = config.get('username', 'jacob')
         self.password = config.get('password', '')
         self.pool_size = config.get('pool_size', 10)
         self.max_overflow = config.get('max_overflow', 20)
@@ -126,13 +126,13 @@ class PostgreSQLStorage(DataStorage):
             query = """
                 SELECT table_name 
                 FROM information_schema.tables 
-                WHERE table_schema = %s 
+                WHERE table_schema = :schema
                 AND table_type = 'BASE TABLE'
                 ORDER BY table_name
             """
             
             with self.engine.connect() as conn:
-                result = conn.execute(text(query), (schema,))
+                result = conn.execute(text(query), {"schema": schema})
                 return [row[0] for row in result]
                 
         except Exception as e:
@@ -155,7 +155,7 @@ class PostgreSQLStorage(DataStorage):
                     hastriggers,
                     rowsecurity
                 FROM pg_tables 
-                WHERE schemaname = %s AND tablename = %s
+                WHERE schemaname = :schema AND tablename = :table
             """
             
             # Get column information
@@ -169,30 +169,30 @@ class PostgreSQLStorage(DataStorage):
                     numeric_precision,
                     numeric_scale
                 FROM information_schema.columns 
-                WHERE table_schema = %s AND table_name = %s
+                WHERE table_schema = :schema AND table_name = :table
                 ORDER BY ordinal_position
             """
             
             # Get table size
             size_query = """
                 SELECT 
-                    pg_size_pretty(pg_total_relation_size(%s)) as total_size,
-                    pg_size_pretty(pg_relation_size(%s)) as table_size,
+                    pg_size_pretty(pg_total_relation_size(:full_table_name1)) as total_size,
+                    pg_size_pretty(pg_relation_size(:full_table_name2)) as table_size,
                     reltuples::BIGINT as estimated_rows
                 FROM pg_class 
-                WHERE relname = %s
+                WHERE relname = :table
             """
             
             with self.engine.connect() as conn:
                 # Basic table info
-                table_result = conn.execute(text(table_info_query), (schema, table))
+                table_result = conn.execute(text(table_info_query), {"schema": schema, "table": table})
                 table_row = table_result.fetchone()
                 
                 if not table_row:
                     raise ValueError(f"Table {schema}.{table} not found")
                 
                 # Column info
-                columns_result = conn.execute(text(columns_query), (schema, table))
+                columns_result = conn.execute(text(columns_query), {"schema": schema, "table": table})
                 columns = []
                 for row in columns_result:
                     columns.append({
@@ -207,7 +207,7 @@ class PostgreSQLStorage(DataStorage):
                 
                 # Size info
                 full_table_name = f'"{schema}"."{table}"'
-                size_result = conn.execute(text(size_query), (full_table_name, full_table_name, table))
+                size_result = conn.execute(text(size_query), {"full_table_name1": full_table_name, "full_table_name2": full_table_name, "table": table})
                 size_row = size_result.fetchone()
                 
                 return {

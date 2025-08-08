@@ -1,0 +1,224 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1><i class="fas fa-project-diagram"></i> Pipeline Management</h1>
+        <a href="/create-pipeline" class="btn btn-primary">
+            <i class="fas fa-plus"></i> Create Pipeline
+        </a>
+    </div>
+    
+    <!-- Pipeline Filters -->
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="input-group">
+                <span class="input-group-text"><i class="fas fa-search"></i></span>
+                <input type="text" class="form-control" id="pipeline-search" placeholder="Search pipelines...">
+            </div>
+        </div>
+        <div class="col-md-3">
+            <select class="form-select" id="status-filter">
+                <option value="">All Statuses</option>
+                <option value="active">Active</option>
+                <option value="inactive">Inactive</option>
+                <option value="error">Error</option>
+            </select>
+        </div>
+        <div class="col-md-3">
+            <button class="btn btn-outline-secondary w-100" onclick="refreshPipelines()">
+                <i class="fas fa-sync-alt"></i> Refresh
+            </button>
+        </div>
+    </div>
+    
+    <!-- Pipeline Cards -->
+    <div class="row" id="pipeline-cards">
+        <div class="col-12 text-center">
+            <div class="spinner-border" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+            <p class="mt-2">Loading pipelines...</p>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+let pipelines = [];
+
+function loadPipelines() {
+    // Fetch real pipeline data from API
+    axios.get('/api/pipelines')
+        .then(response => {
+            pipelines = response.data.pipelines || [];
+            renderPipelines();
+        })
+        .catch(error => {
+            console.error('Error loading pipelines:', error);
+            // Show error message
+            const container = document.getElementById('pipeline-cards');
+            container.innerHTML = `
+                <div class="col-12 text-center">
+                    <i class="fas fa-exclamation-triangle fa-3x text-danger mb-3"></i>
+                    <h5 class="text-danger">Error Loading Pipelines</h5>
+                    <p class="text-muted">Unable to load pipeline data. Please try again.</p>
+                    <button class="btn btn-primary" onclick="loadPipelines()">Retry</button>
+                </div>
+            `;
+        });
+}
+
+function renderPipelines(filteredPipelines = pipelines) {
+    const container = document.getElementById('pipeline-cards');
+    
+    if (filteredPipelines.length === 0) {
+        container.innerHTML = `
+            <div class="col-12 text-center">
+                <i class="fas fa-folder-open fa-3x text-muted mb-3"></i>
+                <h5 class="text-muted">No pipelines found</h5>
+                <p class="text-muted">Create your first pipeline to get started</p>
+                <a href="/create-pipeline" class="btn btn-primary">Create Pipeline</a>
+            </div>
+        `;
+        return;
+    }
+    
+    const cardsHtml = filteredPipelines.map(pipeline => `
+        <div class="col-lg-4 col-md-6 mb-4">
+            <div class="card pipeline-card h-100">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h6 class="mb-0">${pipeline.name}</h6>
+                    <span class="badge badge-${getStatusColor(pipeline.status)}">${pipeline.status}</span>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted">${pipeline.description}</p>
+                    <div class="row text-center">
+                        <div class="col-4">
+                            <small class="text-muted">Last Run</small>
+                            <div class="fw-bold">${formatDate(pipeline.last_run)}</div>
+                        </div>
+                        <div class="col-4">
+                            <small class="text-muted">Executions</small>
+                            <div class="fw-bold">${pipeline.execution_count || 0}</div>
+                        </div>
+                        <div class="col-4">
+                            <small class="text-muted">Success Rate</small>
+                            <div class="fw-bold">${pipeline.success_rate || 0}%</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer">
+                    <div class="btn-group w-100" role="group">
+                        <button type="button" class="btn btn-outline-primary btn-sm" onclick="runPipeline('${pipeline.name}')">
+                            <i class="fas fa-play"></i> Run
+                        </button>
+                        <button type="button" class="btn btn-outline-info btn-sm" onclick="viewPipeline('${pipeline.name}')">
+                            <i class="fas fa-eye"></i> View
+                        </button>
+                        <button type="button" class="btn btn-outline-secondary btn-sm" onclick="editPipeline('${pipeline.name}')">
+                            <i class="fas fa-edit"></i> Edit
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `).join('');
+    
+    container.innerHTML = cardsHtml;
+}
+
+function getStatusColor(status) {
+    switch(status) {
+        case 'active': return 'success';
+        case 'inactive': return 'secondary';
+        case 'error': return 'danger';
+        default: return 'primary';
+    }
+}
+
+function formatDate(dateStr) {
+    const date = new Date(dateStr);
+    return date.toLocaleDateString();
+}
+
+function refreshPipelines() {
+    loadPipelines();
+}
+
+function runPipeline(name) {
+    if (confirm(`Are you sure you want to run pipeline "${name}"?`)) {
+        axios.post(`/api/pipelines/${name}/execute`)
+            .then(response => {
+                alert(`Pipeline "${name}" started successfully!`);
+                loadPipelines();
+            })
+            .catch(error => {
+                alert(`Error starting pipeline: ${error.response?.data?.error || error.message}`);
+            });
+    }
+}
+
+function viewPipeline(name) {
+    // Navigate to pipeline details page
+    window.location.href = `/pipelines/${name}`;
+}
+
+function editPipeline(name) {
+    // Navigate to pipeline edit page
+    window.location.href = `/pipelines/${name}/edit`;
+}
+
+// Search functionality
+document.getElementById('pipeline-search').addEventListener('input', function() {
+    const searchTerm = this.value.toLowerCase();
+    const statusFilter = document.getElementById('status-filter').value;
+    
+    let filtered = pipelines.filter(pipeline => {
+        const matchesSearch = pipeline.name.toLowerCase().includes(searchTerm) ||
+                            pipeline.description.toLowerCase().includes(searchTerm);
+        const matchesStatus = !statusFilter || pipeline.status === statusFilter;
+        return matchesSearch && matchesStatus;
+    });
+    
+    renderPipelines(filtered);
+});
+
+// Status filter
+document.getElementById('status-filter').addEventListener('change', function() {
+    const statusFilter = this.value;
+    const searchTerm = document.getElementById('pipeline-search').value.toLowerCase();
+    
+    let filtered = pipelines.filter(pipeline => {
+        const matchesSearch = pipeline.name.toLowerCase().includes(searchTerm) ||
+                            pipeline.description.toLowerCase().includes(searchTerm);
+        const matchesStatus = !statusFilter || pipeline.status === statusFilter;
+        return matchesSearch && matchesStatus;
+    });
+    
+    renderPipelines(filtered);
+});
+
+// Load pipelines on page load
+document.addEventListener('DOMContentLoaded', function() {
+    loadPipelines();
+});
+</script>
+
+<style>
+.pipeline-card {
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.pipeline-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.badge-success { background-color: #28a745; }
+.badge-secondary { background-color: #6c757d; }
+.badge-danger { background-color: #dc3545; }
+.badge-primary { background-color: #007bff; }
+</style>
+{% endblock %}

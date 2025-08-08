@@ -1,0 +1,30 @@
+description: Pipeline for processing csv data
+input:
+  file_pattern: '*.csv'
+name: ecommerce_analysis
+processing:
+  engine: pandas
+  operations:
+  - params:
+      operations:
+      - remove_empty_rows
+      - trim_strings
+    type: clean
+profiling:
+  enabled: true
+  generate_report: true
+  output_path: ./reports/ecommerce_analysis_profile.html
+source:
+  config:
+    base_path: ./data/raw
+    delimiter: ','
+    encoding: utf-8
+  type: csv
+storage:
+  destination: ecommerce_analysis_data
+  mode: append
+  type: postgresql
+validation:
+  auto_generate_expectations: true
+  enabled: true
+  suite_name: ecommerce_analysis_validation

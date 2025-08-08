@@ -1,0 +1,207 @@
+# Prometheus Alert Rules for Data Pipeline Framework
+
+groups:
+  - name: data_pipeline_alerts
+    rules:
+      # High-level service health
+      - alert: DataPipelineAppDown
+        expr: up{job="data-pipeline-app"} == 0
+        for: 1m
+        labels:
+          severity: critical
+          service: data-pipeline
+        annotations:
+          summary: "Data Pipeline Application is down"
+          description: "The Data Pipeline Application has been down for more than 1 minute."
+          runbook_url: "https://docs.data-pipeline.local/runbooks/app-down"
+
+      - alert: DataPipelineWorkersDown
+        expr: up{job="data-pipeline-workers"} == 0
+        for: 2m
+        labels:
+          severity: critical
+          service: data-pipeline
+        annotations:
+          summary: "Data Pipeline Workers are down"
+          description: "All Data Pipeline Workers have been down for more than 2 minutes."
+
+      # Database alerts
+      - alert: PostgreSQLDown
+        expr: up{job="postgres"} == 0
+        for: 1m
+        labels:
+          severity: critical
+          service: database
+        annotations:
+          summary: "PostgreSQL database is down"
+          description: "PostgreSQL database has been down for more than 1 minute."
+
+      - alert: PostgreSQLHighConnections
+        expr: pg_stat_database_numbackends / pg_settings_max_connections * 100 > 80
+        for: 5m
+        labels:
+          severity: warning
+          service: database
+        annotations:
+          summary: "PostgreSQL connection usage is high"
+          description: "PostgreSQL is using {{ $value }}% of available connections."
+
+      - alert: PostgreSQLSlowQueries
+        expr: rate(pg_stat_database_tup_returned[5m]) / rate(pg_stat_database_tup_fetched[5m]) < 0.1
+        for: 10m
+        labels:
+          severity: warning
+          service: database
+        annotations:
+          summary: "PostgreSQL has slow queries"
+          description: "PostgreSQL query efficiency is below 10% for the last 10 minutes."
+
+      # Redis alerts
+      - alert: RedisDown
+        expr: up{job="redis"} == 0
+        for: 1m
+        labels:
+          severity: warning
+          service: cache
+        annotations:
+          summary: "Redis cache is down"
+          description: "Redis cache has been down for more than 1 minute."
+
+      - alert: RedisHighMemoryUsage
+        expr: redis_memory_used_bytes / redis_config_maxmemory * 100 > 90
+        for: 5m
+        labels:
+          severity: critical
+          service: cache
+        annotations:
+          summary: "Redis memory usage is critically high"
+          description: "Redis is using {{ $value }}% of allocated memory."
+
+      # System resource alerts
+      - alert: HighCPUUsage
+        expr: 100 - (avg by(instance) (rate(node_cpu_seconds_total{mode="idle"}[5m])) * 100) > 80
+        for: 5m
+        labels:
+          severity: warning
+          service: system
+        annotations:
+          summary: "High CPU usage detected"
+          description: "CPU usage is above 80% for more than 5 minutes on instance {{ $labels.instance }}."
+
+      - alert: HighMemoryUsage
+        expr: (node_memory_MemTotal_bytes - node_memory_MemAvailable_bytes) / node_memory_MemTotal_bytes * 100 > 85
+        for: 5m
+        labels:
+          severity: critical
+          service: system
+        annotations:
+          summary: "High memory usage detected"
+          description: "Memory usage is above 85% for more than 5 minutes on instance {{ $labels.instance }}."
+
+      - alert: LowDiskSpace
+        expr: (node_filesystem_size_bytes{mountpoint="/"} - node_filesystem_free_bytes{mountpoint="/"}) / node_filesystem_size_bytes{mountpoint="/"} * 100 > 90
+        for: 5m
+        labels:
+          severity: critical
+          service: system
+        annotations:
+          summary: "Low disk space"
+          description: "Disk usage is above 90% on instance {{ $labels.instance }}."
+
+      # Pipeline-specific alerts
+      - alert: PipelineQueueBacklog
+        expr: data_pipeline_queue_pending_items > 1000
+        for: 10m
+        labels:
+          severity: warning
+          service: data-pipeline
+        annotations:
+          summary: "Large pipeline queue backlog"
+          description: "There are {{ $value }} pending items in the pipeline queue for more than 10 minutes."
+
+      - alert: PipelineHighErrorRate
+        expr: rate(data_pipeline_errors_total[5m]) > 0.1
+        for: 5m
+        labels:
+          severity: warning
+          service: data-pipeline
+        annotations:
+          summary: "High pipeline error rate"
+          description: "Pipeline error rate is {{ $value }} errors/second over the last 5 minutes."
+
+      - alert: PipelineSlowProcessing
+        expr: histogram_quantile(0.95, rate(data_pipeline_processing_duration_seconds_bucket[5m])) > 300
+        for: 10m
+        labels:
+          severity: warning
+          service: data-pipeline
+        annotations:
+          summary: "Slow pipeline processing"
+          description: "95th percentile processing time is {{ $value }} seconds."
+
+      - alert: DataQualityIssues
+        expr: data_pipeline_data_quality_score < 0.8
+        for: 5m
+        labels:
+          severity: warning
+          service: data-quality
+        annotations:
+          summary: "Data quality score is low"
+          description: "Data quality score has dropped to {{ $value }} for the last 5 minutes."
+
+      # Network and connectivity
+      - alert: HighNetworkLatency
+        expr: histogram_quantile(0.95, rate(http_request_duration_seconds_bucket[5m])) > 1
+        for: 5m
+        labels:
+          severity: warning
+          service: network
+        annotations:
+          summary: "High network latency"
+          description: "95th percentile HTTP request latency is {{ $value }} seconds."
+
+      - alert: TooManyHTTPErrors
+        expr: rate(http_requests_total{status=~"4.*|5.*"}[5m]) / rate(http_requests_total[5m]) > 0.05
+        for: 5m
+        labels:
+          severity: warning
+          service: network
+        annotations:
+          summary: "High HTTP error rate"
+          description: "HTTP error rate is {{ $value }}% over the last 5 minutes."
+
+  - name: data_pipeline_critical
+    rules:
+      # Critical business logic alerts
+      - alert: DataPipelineTotalFailure
+        expr: sum(rate(data_pipeline_failed_jobs_total[5m])) / sum(rate(data_pipeline_total_jobs_total[5m])) > 0.5
+        for: 2m
+        labels:
+          severity: critical
+          service: data-pipeline
+          page: "true"
+        annotations:
+          summary: "Data Pipeline is experiencing massive failures"
+          description: "More than 50% of pipeline jobs are failing for the last 2 minutes."
+
+      - alert: DataLossDetected
+        expr: increase(data_pipeline_data_loss_events_total[5m]) > 0
+        for: 0m
+        labels:
+          severity: emergency
+          service: data-pipeline
+          page: "true"
+        annotations:
+          summary: "URGENT: Data loss detected in pipeline"
+          description: "Data loss event has been detected in the pipeline. Immediate attention required."
+
+      - alert: SecurityBreach
+        expr: increase(data_pipeline_security_alerts_total[1m]) > 0
+        for: 0m
+        labels:
+          severity: emergency
+          service: security
+          page: "true"
+        annotations:
+          summary: "URGENT: Potential security breach detected"
+          description: "Security alert has been triggered. Check logs immediately."

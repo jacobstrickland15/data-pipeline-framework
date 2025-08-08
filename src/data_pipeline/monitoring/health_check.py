@@ -511,12 +511,22 @@ class HealthCheckManager:
         logger.info("Stopped background health monitoring")
     
     def _background_monitor(self):
-        """Background monitoring loop."""
+        """Background monitoring loop with memory leak prevention."""
+        iteration = 0
         while not self._stop_event.wait(self.check_interval):
             try:
                 self.run_all_health_checks()
+                
+                # Force garbage collection every 10 iterations to prevent memory buildup
+                iteration += 1
+                if iteration % 10 == 0:
+                    import gc
+                    gc.collect()
+                    
             except Exception as e:
                 logger.exception(f"Error in background health monitoring: {e}")
+                # Prevent infinite error loops by backing off on errors
+                self._stop_event.wait(min(self.check_interval * 2, 300))
     
     def setup_default_checks(self, database_url: Optional[str] = None,
                            redis_host: str = "localhost", redis_port: int = 6379):

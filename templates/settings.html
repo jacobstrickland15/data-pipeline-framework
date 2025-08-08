@@ -1,0 +1,720 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1><i class="fas fa-cog"></i> Settings</h1>
+        <div class="btn-group">
+            <button class="btn btn-success" onclick="saveSettings()">
+                <i class="fas fa-save"></i> Save Changes
+            </button>
+            <button class="btn btn-outline-secondary" onclick="resetSettings()">
+                <i class="fas fa-undo"></i> Reset
+            </button>
+        </div>
+    </div>
+    
+    <!-- Settings Navigation Tabs -->
+    <ul class="nav nav-tabs mb-4" id="settingsTab" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link active" id="general-tab" data-bs-toggle="tab" data-bs-target="#general" type="button">
+                <i class="fas fa-sliders-h"></i> General
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="database-tab" data-bs-toggle="tab" data-bs-target="#database" type="button">
+                <i class="fas fa-database"></i> Database
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="storage-tab" data-bs-toggle="tab" data-bs-target="#storage" type="button">
+                <i class="fas fa-cloud"></i> Storage
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="monitoring-tab" data-bs-toggle="tab" data-bs-target="#monitoring" type="button">
+                <i class="fas fa-chart-line"></i> Monitoring
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="notifications-tab" data-bs-toggle="tab" data-bs-target="#notifications" type="button">
+                <i class="fas fa-bell"></i> Notifications
+            </button>
+        </li>
+    </ul>
+    
+    <!-- Tab Content -->
+    <div class="tab-content" id="settingsTabContent">
+        <!-- General Settings -->
+        <div class="tab-pane fade show active" id="general" role="tabpanel">
+            <div class="row">
+                <div class="col-lg-6">
+                    <div class="card">
+                        <div class="card-header">
+                            <h6 class="mb-0">Application Settings</h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="mb-3">
+                                <label for="app-name" class="form-label">Application Name</label>
+                                <input type="text" class="form-control" id="app-name" value="Data Pipeline Framework">
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="default-engine" class="form-label">Default Processing Engine</label>
+                                <select class="form-select" id="default-engine">
+                                    <option value="pandas">Pandas</option>
+                                    <option value="spark">Apache Spark</option>
+                                </select>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="max-workers" class="form-label">Maximum Worker Threads</label>
+                                <input type="number" class="form-control" id="max-workers" value="4" min="1" max="16">
+                                <div class="form-text">Number of parallel workers for pipeline execution</div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="log-level" class="form-label">Log Level</label>
+                                <select class="form-select" id="log-level">
+                                    <option value="DEBUG">Debug</option>
+                                    <option value="INFO" selected>Info</option>
+                                    <option value="WARNING">Warning</option>
+                                    <option value="ERROR">Error</option>
+                                </select>
+                            </div>
+                            
+                            <div class="form-check mb-3">
+                                <input class="form-check-input" type="checkbox" id="auto-backup" checked>
+                                <label class="form-check-label" for="auto-backup">
+                                    Enable automatic configuration backup
+                                </label>
+                            </div>
+                            
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="debug-mode">
+                                <label class="form-check-label" for="debug-mode">
+                                    Enable debug mode
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-lg-6">
+                    <div class="card">
+                        <div class="card-header">
+                            <h6 class="mb-0">Performance Settings</h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="mb-3">
+                                <label for="memory-limit" class="form-label">Memory Limit (GB)</label>
+                                <input type="number" class="form-control" id="memory-limit" value="8" min="1" max="64">
+                                <div class="form-text">Maximum memory usage for data processing</div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="batch-size" class="form-label">Default Batch Size</label>
+                                <input type="number" class="form-control" id="batch-size" value="10000" min="1000">
+                                <div class="form-text">Number of records to process in each batch</div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="timeout" class="form-label">Pipeline Timeout (minutes)</label>
+                                <input type="number" class="form-control" id="timeout" value="60" min="5">
+                            </div>
+                            
+                            <div class="form-check mb-3">
+                                <input class="form-check-input" type="checkbox" id="cache-enabled" checked>
+                                <label class="form-check-label" for="cache-enabled">
+                                    Enable result caching
+                                </label>
+                            </div>
+                            
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="parallel-processing" checked>
+                                <label class="form-check-label" for="parallel-processing">
+                                    Enable parallel processing
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Database Settings -->
+        <div class="tab-pane fade" id="database" role="tabpanel">
+            <div class="row">
+                <div class="col-lg-8">
+                    <div class="card">
+                        <div class="card-header">
+                            <h6 class="mb-0">PostgreSQL Configuration</h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="db-host" class="form-label">Host</label>
+                                        <input type="text" class="form-control" id="db-host" value="localhost">
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="db-port" class="form-label">Port</label>
+                                        <input type="number" class="form-control" id="db-port" value="5432">
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="db-name" class="form-label">Database Name</label>
+                                <input type="text" class="form-control" id="db-name" value="pipeline_db">
+                            </div>
+                            
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="db-username" class="form-label">Username</label>
+                                        <input type="text" class="form-control" id="db-username" value="postgres">
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="db-password" class="form-label">Password</label>
+                                        <input type="password" class="form-control" id="db-password" placeholder="Enter password">
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="db-pool-size" class="form-label">Connection Pool Size</label>
+                                        <input type="number" class="form-control" id="db-pool-size" value="10" min="1" max="50">
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="db-timeout" class="form-label">Connection Timeout (seconds)</label>
+                                        <input type="number" class="form-control" id="db-timeout" value="30" min="5">
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="d-flex justify-content-between">
+                                <button type="button" class="btn btn-outline-primary" onclick="testDatabaseConnection()">
+                                    <i class="fas fa-plug"></i> Test Connection
+                                </button>
+                                <div class="text-muted small" id="db-status">
+                                    Connection status: Unknown
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-lg-4">
+                    <div class="card">
+                        <div class="card-header">
+                            <h6 class="mb-0">Database Options</h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="form-check mb-3">
+                                <input class="form-check-input" type="checkbox" id="ssl-enabled">
+                                <label class="form-check-label" for="ssl-enabled">
+                                    Enable SSL Connection
+                                </label>
+                            </div>
+                            
+                            <div class="form-check mb-3">
+                                <input class="form-check-input" type="checkbox" id="auto-commit" checked>
+                                <label class="form-check-label" for="auto-commit">
+                                    Auto Commit Transactions
+                                </label>
+                            </div>
+                            
+                            <div class="form-check mb-3">
+                                <input class="form-check-input" type="checkbox" id="connection-validation" checked>
+                                <label class="form-check-label" for="connection-validation">
+                                    Validate Connections
+                                </label>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="default-schema" class="form-label">Default Schema</label>
+                                <input type="text" class="form-control" id="default-schema" value="public">
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="query-timeout" class="form-label">Query Timeout (seconds)</label>
+                                <input type="number" class="form-control" id="query-timeout" value="300">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Storage Settings -->
+        <div class="tab-pane fade" id="storage" role="tabpanel">
+            <div class="row">
+                <div class="col-lg-6">
+                    <div class="card">
+                        <div class="card-header">
+                            <h6 class="mb-0">Local Storage</h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="mb-3">
+                                <label for="raw-data-path" class="form-label">Raw Data Directory</label>
+                                <input type="text" class="form-control" id="raw-data-path" value="data/raw/">
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="processed-data-path" class="form-label">Processed Data Directory</label>
+                                <input type="text" class="form-control" id="processed-data-path" value="data/processed/">
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="temp-path" class="form-label">Temporary Files Directory</label>
+                                <input type="text" class="form-control" id="temp-path" value="data/temp/">
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="backup-path" class="form-label">Backup Directory</label>
+                                <input type="text" class="form-control" id="backup-path" value="backups/">
+                            </div>
+                            
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="auto-cleanup" checked>
+                                <label class="form-check-label" for="auto-cleanup">
+                                    Auto-cleanup temporary files
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-lg-6">
+                    <div class="card">
+                        <div class="card-header">
+                            <h6 class="mb-0">AWS S3 Configuration</h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="mb-3">
+                                <label for="aws-access-key" class="form-label">Access Key ID</label>
+                                <input type="text" class="form-control" id="aws-access-key" placeholder="Enter access key">
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="aws-secret-key" class="form-label">Secret Access Key</label>
+                                <input type="password" class="form-control" id="aws-secret-key" placeholder="Enter secret key">
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="aws-region" class="form-label">Region</label>
+                                <select class="form-select" id="aws-region">
+                                    <option value="us-east-1">US East (N. Virginia)</option>
+                                    <option value="us-west-2">US West (Oregon)</option>
+                                    <option value="eu-west-1">Europe (Ireland)</option>
+                                    <option value="ap-southeast-1">Asia Pacific (Singapore)</option>
+                                </select>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="s3-bucket" class="form-label">Default Bucket</label>
+                                <input type="text" class="form-control" id="s3-bucket" placeholder="bucket-name">
+                            </div>
+                            
+                            <div class="d-flex justify-content-between">
+                                <button type="button" class="btn btn-outline-primary" onclick="testS3Connection()">
+                                    <i class="fas fa-cloud"></i> Test S3 Connection
+                                </button>
+                                <div class="text-muted small" id="s3-status">
+                                    S3 status: Not configured
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Monitoring Settings -->
+        <div class="tab-pane fade" id="monitoring" role="tabpanel">
+            <div class="row">
+                <div class="col-lg-6">
+                    <div class="card">
+                        <div class="card-header">
+                            <h6 class="mb-0">Metrics Collection</h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="form-check mb-3">
+                                <input class="form-check-input" type="checkbox" id="metrics-enabled" checked>
+                                <label class="form-check-label" for="metrics-enabled">
+                                    Enable metrics collection
+                                </label>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="metrics-interval" class="form-label">Collection Interval (seconds)</label>
+                                <input type="number" class="form-control" id="metrics-interval" value="30" min="10">
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="retention-period" class="form-label">Data Retention (days)</label>
+                                <input type="number" class="form-control" id="retention-period" value="30" min="1">
+                            </div>
+                            
+                            <div class="form-check mb-3">
+                                <input class="form-check-input" type="checkbox" id="system-metrics" checked>
+                                <label class="form-check-label" for="system-metrics">
+                                    Collect system metrics (CPU, Memory, Disk)
+                                </label>
+                            </div>
+                            
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="performance-metrics" checked>
+                                <label class="form-check-label" for="performance-metrics">
+                                    Collect performance metrics
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-lg-6">
+                    <div class="card">
+                        <div class="card-header">
+                            <h6 class="mb-0">Health Checks</h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="form-check mb-3">
+                                <input class="form-check-input" type="checkbox" id="health-checks-enabled" checked>
+                                <label class="form-check-label" for="health-checks-enabled">
+                                    Enable health checks
+                                </label>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="health-check-interval" class="form-label">Check Interval (seconds)</label>
+                                <input type="number" class="form-control" id="health-check-interval" value="60" min="30">
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="health-timeout" class="form-label">Health Check Timeout (seconds)</label>
+                                <input type="number" class="form-control" id="health-timeout" value="10" min="5">
+                            </div>
+                            
+                            <div class="form-check mb-3">
+                                <input class="form-check-input" type="checkbox" id="db-health-check" checked>
+                                <label class="form-check-label" for="db-health-check">
+                                    Database connectivity check
+                                </label>
+                            </div>
+                            
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="disk-space-check" checked>
+                                <label class="form-check-label" for="disk-space-check">
+                                    Disk space check
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Notifications Settings -->
+        <div class="tab-pane fade" id="notifications" role="tabpanel">
+            <div class="row">
+                <div class="col-lg-6">
+                    <div class="card">
+                        <div class="card-header">
+                            <h6 class="mb-0">Email Notifications</h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="form-check mb-3">
+                                <input class="form-check-input" type="checkbox" id="email-enabled" checked>
+                                <label class="form-check-label" for="email-enabled">
+                                    Enable email notifications
+                                </label>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="smtp-server" class="form-label">SMTP Server</label>
+                                <input type="text" class="form-control" id="smtp-server" placeholder="smtp.gmail.com">
+                            </div>
+                            
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="smtp-port" class="form-label">SMTP Port</label>
+                                        <input type="number" class="form-control" id="smtp-port" value="587">
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="smtp-security" class="form-label">Security</label>
+                                        <select class="form-select" id="smtp-security">
+                                            <option value="tls">TLS</option>
+                                            <option value="ssl">SSL</option>
+                                            <option value="none">None</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="from-email" class="form-label">From Email</label>
+                                <input type="email" class="form-control" id="from-email" placeholder="noreply@company.com">
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="admin-emails" class="form-label">Admin Emails</label>
+                                <textarea class="form-control" id="admin-emails" rows="3" placeholder="admin1@company.com&#10;admin2@company.com"></textarea>
+                                <div class="form-text">Enter one email per line</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-lg-6">
+                    <div class="card">
+                        <div class="card-header">
+                            <h6 class="mb-0">Alert Rules</h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="form-check mb-3">
+                                <input class="form-check-input" type="checkbox" id="pipeline-failure-alerts" checked>
+                                <label class="form-check-label" for="pipeline-failure-alerts">
+                                    Pipeline failure alerts
+                                </label>
+                            </div>
+                            
+                            <div class="form-check mb-3">
+                                <input class="form-check-input" type="checkbox" id="performance-alerts" checked>
+                                <label class="form-check-label" for="performance-alerts">
+                                    Performance degradation alerts
+                                </label>
+                            </div>
+                            
+                            <div class="form-check mb-3">
+                                <input class="form-check-input" type="checkbox" id="data-quality-alerts" checked>
+                                <label class="form-check-label" for="data-quality-alerts">
+                                    Data quality alerts
+                                </label>
+                            </div>
+                            
+                            <div class="form-check mb-3">
+                                <input class="form-check-input" type="checkbox" id="system-health-alerts" checked>
+                                <label class="form-check-label" for="system-health-alerts">
+                                    System health alerts
+                                </label>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="alert-cooldown" class="form-label">Alert Cooldown (minutes)</label>
+                                <input type="number" class="form-control" id="alert-cooldown" value="15" min="1">
+                                <div class="form-text">Minimum time between duplicate alerts</div>
+                            </div>
+                            
+                            <button type="button" class="btn btn-outline-primary" onclick="testEmailNotification()">
+                                <i class="fas fa-envelope"></i> Send Test Email
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+function saveSettings() {
+    // Collect all form data
+    const settings = {
+        general: {
+            appName: document.getElementById('app-name').value,
+            defaultEngine: document.getElementById('default-engine').value,
+            maxWorkers: parseInt(document.getElementById('max-workers').value),
+            logLevel: document.getElementById('log-level').value,
+            autoBackup: document.getElementById('auto-backup').checked,
+            debugMode: document.getElementById('debug-mode').checked,
+            memoryLimit: parseInt(document.getElementById('memory-limit').value),
+            batchSize: parseInt(document.getElementById('batch-size').value),
+            timeout: parseInt(document.getElementById('timeout').value),
+            cacheEnabled: document.getElementById('cache-enabled').checked,
+            parallelProcessing: document.getElementById('parallel-processing').checked
+        },
+        database: {
+            host: document.getElementById('db-host').value,
+            port: parseInt(document.getElementById('db-port').value),
+            name: document.getElementById('db-name').value,
+            username: document.getElementById('db-username').value,
+            password: document.getElementById('db-password').value,
+            poolSize: parseInt(document.getElementById('db-pool-size').value),
+            timeout: parseInt(document.getElementById('db-timeout').value),
+            sslEnabled: document.getElementById('ssl-enabled').checked,
+            autoCommit: document.getElementById('auto-commit').checked,
+            connectionValidation: document.getElementById('connection-validation').checked,
+            defaultSchema: document.getElementById('default-schema').value,
+            queryTimeout: parseInt(document.getElementById('query-timeout').value)
+        },
+        storage: {
+            rawDataPath: document.getElementById('raw-data-path').value,
+            processedDataPath: document.getElementById('processed-data-path').value,
+            tempPath: document.getElementById('temp-path').value,
+            backupPath: document.getElementById('backup-path').value,
+            autoCleanup: document.getElementById('auto-cleanup').checked,
+            awsAccessKey: document.getElementById('aws-access-key').value,
+            awsSecretKey: document.getElementById('aws-secret-key').value,
+            awsRegion: document.getElementById('aws-region').value,
+            s3Bucket: document.getElementById('s3-bucket').value
+        },
+        monitoring: {
+            metricsEnabled: document.getElementById('metrics-enabled').checked,
+            metricsInterval: parseInt(document.getElementById('metrics-interval').value),
+            retentionPeriod: parseInt(document.getElementById('retention-period').value),
+            systemMetrics: document.getElementById('system-metrics').checked,
+            performanceMetrics: document.getElementById('performance-metrics').checked,
+            healthChecksEnabled: document.getElementById('health-checks-enabled').checked,
+            healthCheckInterval: parseInt(document.getElementById('health-check-interval').value),
+            healthTimeout: parseInt(document.getElementById('health-timeout').value),
+            dbHealthCheck: document.getElementById('db-health-check').checked,
+            diskSpaceCheck: document.getElementById('disk-space-check').checked
+        },
+        notifications: {
+            emailEnabled: document.getElementById('email-enabled').checked,
+            smtpServer: document.getElementById('smtp-server').value,
+            smtpPort: parseInt(document.getElementById('smtp-port').value),
+            smtpSecurity: document.getElementById('smtp-security').value,
+            fromEmail: document.getElementById('from-email').value,
+            adminEmails: document.getElementById('admin-emails').value.split('\n').filter(email => email.trim()),
+            pipelineFailureAlerts: document.getElementById('pipeline-failure-alerts').checked,
+            performanceAlerts: document.getElementById('performance-alerts').checked,
+            dataQualityAlerts: document.getElementById('data-quality-alerts').checked,
+            systemHealthAlerts: document.getElementById('system-health-alerts').checked,
+            alertCooldown: parseInt(document.getElementById('alert-cooldown').value)
+        }
+    };
+    
+    // In a real application, this would send the settings to the server
+    console.log('Saving settings:', settings);
+    
+    // Mock API call
+    setTimeout(() => {
+        alert('Settings saved successfully!');
+    }, 500);
+}
+
+function resetSettings() {
+    if (confirm('Are you sure you want to reset all settings to their default values? This action cannot be undone.')) {
+        location.reload();
+    }
+}
+
+function testDatabaseConnection() {
+    const dbConfig = {
+        host: document.getElementById('db-host').value,
+        port: document.getElementById('db-port').value,
+        name: document.getElementById('db-name').value,
+        username: document.getElementById('db-username').value
+    };
+    
+    if (!dbConfig.host || !dbConfig.name || !dbConfig.username) {
+        alert('Please fill in all required database fields');
+        return;
+    }
+    
+    document.getElementById('db-status').textContent = 'Testing connection...';
+    
+    // Real connection test would go here
+    setTimeout(() => {
+        const status = document.getElementById('db-status');
+        status.textContent = 'Connection status: Not implemented yet';
+        status.className = 'text-warning small';
+    }, 1000);
+}
+
+function testS3Connection() {
+    const s3Config = {
+        accessKey: document.getElementById('aws-access-key').value,
+        secretKey: document.getElementById('aws-secret-key').value,
+        region: document.getElementById('aws-region').value,
+        bucket: document.getElementById('s3-bucket').value
+    };
+    
+    if (!s3Config.accessKey || !s3Config.secretKey || !s3Config.bucket) {
+        alert('Please fill in all required S3 fields');
+        return;
+    }
+    
+    document.getElementById('s3-status').textContent = 'Testing S3 connection...';
+    
+    // Real S3 connection test would go here  
+    setTimeout(() => {
+        const status = document.getElementById('s3-status');
+        status.textContent = 'S3 status: Not implemented yet';
+        status.className = 'text-warning small';
+    }, 1000);
+}
+
+function testEmailNotification() {
+    const emailConfig = {
+        smtpServer: document.getElementById('smtp-server').value,
+        fromEmail: document.getElementById('from-email').value,
+        adminEmails: document.getElementById('admin-emails').value
+    };
+    
+    if (!emailConfig.smtpServer || !emailConfig.fromEmail || !emailConfig.adminEmails) {
+        alert('Please configure email settings before testing');
+        return;
+    }
+    
+    // Mock email test
+    alert('Test email sent! Check your inbox for the test notification.');
+}
+
+// Load settings on page load
+document.addEventListener('DOMContentLoaded', function() {
+    // In a real application, this would load settings from the server
+    console.log('Loading settings from server...');
+});
+</script>
+
+<style>
+.nav-tabs .nav-link {
+    color: #6c757d;
+}
+
+.nav-tabs .nav-link.active {
+    color: #007bff;
+    border-color: #dee2e6 #dee2e6 #fff;
+}
+
+.card {
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+    border: 1px solid rgba(0, 0, 0, 0.125);
+}
+
+.form-check-input:checked {
+    background-color: #007bff;
+    border-color: #007bff;
+}
+
+.btn-group .btn {
+    border-radius: 0.375rem;
+}
+
+.btn-group .btn:not(:last-child) {
+    margin-right: 0.5rem;
+}
+
+.alert {
+    border: none;
+    border-radius: 0.5rem;
+}
+</style>
+{% endblock %}

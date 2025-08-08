@@ -62,7 +62,10 @@ class DataValidator:
         """Create an expectation suite for the dataset."""
         try:
             # Create or get existing suite
-            suite = self.context.add_or_update_expectation_suite(expectation_suite_name=suite_name)
+            try:
+                suite = self.context.get_expectation_suite(expectation_suite_name=suite_name)
+            except:
+                suite = self.context.create_expectation_suite(expectation_suite_name=suite_name)
             
             if auto_generate:
                 # Auto-generate basic expectations
@@ -316,7 +319,10 @@ class DataValidator:
     def create_custom_expectation_suite(self, suite_name: str, expectations_config: List[Dict[str, Any]]) -> ExpectationSuite:
         """Create expectation suite from custom configuration."""
         try:
-            suite = self.context.add_or_update_expectation_suite(expectation_suite_name=suite_name)
+            try:
+                suite = self.context.get_expectation_suite(expectation_suite_name=suite_name)
+            except:
+                suite = self.context.create_expectation_suite(expectation_suite_name=suite_name)
             
             for exp_config in expectations_config:
                 expectation = ExpectationConfiguration(
@@ -387,7 +393,10 @@ class DataValidator:
                 expectations.append(ExpectationConfiguration(**exp_dict))
             
             # Create suite
-            suite = self.context.add_or_update_expectation_suite(expectation_suite_name=suite_name)
+            try:
+                suite = self.context.get_expectation_suite(expectation_suite_name=suite_name)
+            except:
+                suite = self.context.create_expectation_suite(expectation_suite_name=suite_name)
             
             # Add expectations
             for expectation in expectations:

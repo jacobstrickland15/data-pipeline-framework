@@ -474,3 +474,54 @@ class DataQualityMonitor:
         except Exception as e:
             logger.error(f"Failed to get dashboard data: {e}")
             return {'summary': {}, 'table_scores': {}, 'recent_metrics': []}
+    
+    def get_quality_summary(self, table_name: Optional[str] = None) -> List[Dict[str, Any]]:
+        """Get quality metrics summary for all tables or specific table."""
+        try:
+            with self.engine.connect() as conn:
+                # Build query based on parameters
+                where_clause = ""
+                params = {}
+                
+                if table_name:
+                    where_clause = "WHERE table_name = :table_name"
+                    params['table_name'] = table_name
+                
+                # Get recent metrics grouped by table and metric type
+                query = text(f"""
+                    SELECT 
+                        table_name,
+                        AVG(CASE WHEN metric_name = 'completeness' THEN metric_value ELSE NULL END) as completeness_score,
+                        AVG(CASE WHEN metric_name = 'accuracy' THEN metric_value ELSE NULL END) as accuracy_score,
+                        AVG(CASE WHEN metric_name = 'consistency' THEN metric_value ELSE NULL END) as consistency_score,
+                        AVG(CASE WHEN metric_name = 'validity' THEN metric_value ELSE NULL END) as validity_score,
+                        AVG(CASE WHEN metric_name = 'uniqueness' THEN metric_value ELSE NULL END) as uniqueness_score,
+                        MAX(created_at) as last_updated
+                    FROM data_quality.quality_metrics 
+                    {where_clause}
+                    AND created_at >= datetime('now', '-7 days')
+                    GROUP BY table_name
+                    ORDER BY last_updated DESC
+                """)
+                
+                result = conn.execute(query, params)
+                rows = result.fetchall()
+                
+                quality_summary = []
+                for row in rows:
+                    summary = {
+                        'table_name': row[0],
+                        'completeness_score': row[1] or 0.0,
+                        'accuracy_score': row[2] or 0.0, 
+                        'consistency_score': row[3] or 0.0,
+                        'validity_score': row[4] or 0.0,
+                        'uniqueness_score': row[5] or 0.0,
+                        'last_updated': row[6]
+                    }
+                    quality_summary.append(summary)
+                
+                return quality_summary
+            
+        except Exception as e:
+            logger.error(f"Error getting quality summary: {e}")
+            return []
