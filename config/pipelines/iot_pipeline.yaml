@@ -1,0 +1,94 @@
+name: "iot_sensor_pipeline"
+description: "Process IoT sensor data for monitoring and analytics"
+
+source:
+  type: "csv"
+  config:
+    base_path: "./datasets/iot"
+    encoding: "utf-8"
+    delimiter: ","
+
+processing:
+  engine: "pandas"
+  operations:
+    - type: "clean"
+      params:
+        operations: ["remove_empty_rows", "handle_sensor_errors"]
+    - type: "transform"
+      params:
+        date_columns: ["timestamp", "install_date", "last_maintenance"]
+        type_conversions:
+          "value": "float64"
+          "battery_level": "int32"
+          "signal_strength": "int32"
+    - type: "time_series_processing"
+      params:
+        timestamp_column: "timestamp"
+        operations:
+          - type: "resample"
+            frequency: "1H"
+            aggregation: "mean"
+          - type: "rolling_average"
+            window: 24
+          - type: "anomaly_detection"
+            method: "isolation_forest"
+            contamination: 0.1
+    - type: "feature_engineering"
+      params:
+        derived_columns:
+          - name: "hour_of_day"
+            expression: "timestamp.dt.hour"
+          - name: "day_of_week"
+            expression: "timestamp.dt.dayofweek"
+          - name: "is_business_hours"
+            expression: "(timestamp.dt.hour >= 9) & (timestamp.dt.hour <= 17) & (timestamp.dt.weekday < 5)"
+
+storage:
+  type: "postgresql"
+  destination: "iot_sensor_data"
+  mode: "append"
+  schema: "public"
+  partitioning:
+    enabled: true
+    column: "timestamp"
+    strategy: "daily"
+
+validation:
+  enabled: true
+  auto_generate_expectations: true
+  suite_name: "iot_validation"
+  expectations:
+    - expectation_type: "expect_column_values_to_not_be_null"
+      column: "device_id"
+    - expectation_type: "expect_column_values_to_be_of_type"
+      column: "timestamp"
+      type_: "datetime64"
+    - expectation_type: "expect_column_values_to_be_in_set"
+      column: "quality"
+      value_set: ["Good", "Fair", "Poor"]
+
+profiling:
+  enabled: true
+  generate_report: true
+  output_path: "./reports/iot_profile.html"
+  time_series_analysis: true
+  seasonal_decomposition: true
+
+monitoring:
+  data_quality_checks:
+    - metric: "completeness"
+      threshold: 0.95
+      columns: ["device_id", "timestamp", "value"]
+    - metric: "anomaly_rate"
+      threshold: 0.05
+      column: "is_anomaly"
+    - metric: "data_freshness"
+      threshold: 3600  # 1 hour in seconds
+      column: "timestamp"
+  alerts:
+    - condition: "anomaly_rate > 0.1"
+      action: "slack"
+      webhook_url: "${SLACK_WEBHOOK_URL}"
+    - condition: "battery_level < 20"
+      action: "email"
+      recipients: ["maintenance@company.com"]

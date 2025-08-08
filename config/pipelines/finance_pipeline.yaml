@@ -1,0 +1,74 @@
+name: "financial_data_pipeline"
+description: "Process financial transactions and account data for risk analysis"
+
+source:
+  type: "csv"
+  config:
+    base_path: "./datasets/finance"
+    encoding: "utf-8"
+    delimiter: ","
+
+processing:
+  engine: "pandas"
+  operations:
+    - type: "clean"
+      params:
+        operations: ["remove_empty_rows", "trim_strings"]
+    - type: "transform"
+      params:
+        date_columns: ["transaction_date", "open_date", "origination_date", "maturity_date"]
+        type_conversions:
+          "amount": "float64"
+          "balance": "float64"
+          "loan_amount": "float64"
+          "monthly_payment": "float64"
+          "credit_score": "int32"
+    - type: "feature_engineering"
+      params:
+        derived_columns:
+          - name: "transaction_hour"
+            expression: "transaction_date.dt.hour"
+          - name: "is_weekend"
+            expression: "transaction_date.dt.weekday >= 5"
+          - name: "amount_category"
+            expression: "pd.cut(amount.abs(), bins=[0, 100, 500, 2000, float('inf')], labels=['Small', 'Medium', 'Large', 'Very Large'])"
+
+storage:
+  type: "postgresql"
+  destination: "financial_data"
+  mode: "append"
+  schema: "public"
+
+validation:
+  enabled: true
+  auto_generate_expectations: true
+  suite_name: "financial_validation"
+  expectations:
+    - expectation_type: "expect_column_values_to_not_be_null"
+      column: "account_id"
+    - expectation_type: "expect_column_values_to_be_unique"
+      column: "transaction_id"
+    - expectation_type: "expect_column_values_to_be_between"
+      column: "credit_score"
+      min_value: 300
+      max_value: 850
+
+profiling:
+  enabled: true
+  generate_report: true
+  output_path: "./reports/finance_profile.html"
+  fraud_detection: true
+  outlier_detection: true
+
+monitoring:
+  data_quality_checks:
+    - metric: "completeness"
+      threshold: 0.99
+      columns: ["account_id", "transaction_id", "amount"]
+    - metric: "fraud_rate"
+      threshold: 0.05
+      column: "is_fraudulent"
+  alerts:
+    - condition: "fraud_rate > 0.02"
+      action: "email"
+      recipients: ["risk@company.com"]

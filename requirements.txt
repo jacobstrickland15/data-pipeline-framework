@@ -29,6 +29,35 @@ plotly>=5.15.0
 
 # Logging and monitoring
 structlog>=23.1.0
+python-json-logger>=2.0.7
+
+# System monitoring
+psutil>=5.9.0
+
+# Streaming and messaging (optional)
+kafka-python>=2.0.2
+redis>=5.0.0
+
+# Machine learning and advanced analytics (optional)
+scikit-learn>=1.3.0
+scipy>=1.11.0
+
+# Web framework for API endpoints (optional)
+fastapi>=0.103.0
+uvicorn>=0.23.0
+
+# Metrics and observability (optional)
+prometheus-client>=0.17.0
+
+# Time series analysis (optional)
+statsmodels>=0.14.0
+
+# Data generation (for samples)
+faker>=19.6.0
+
+# Additional utilities
+tqdm>=4.66.0
+requests>=2.31.0
 
 # Development tools
 pytest>=7.4.0

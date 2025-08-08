@@ -1,0 +1,97 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15-alpine
+    container_name: data-pipeline-postgres
+    environment:
+      POSTGRES_DB: data_warehouse
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./sql/init.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Data Pipeline Application
+  data-pipeline:
+    build: .
+    container_name: data-pipeline-app
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_NAME=data_warehouse
+      - DB_USER=postgres
+      - DB_PASSWORD=postgres
+    volumes:
+      - ./data:/app/data
+      - ./config:/app/config
+      - ./reports:/app/reports
+      - ./logs:/app/logs
+    command: tail -f /dev/null  # Keep container running for development
+
+  # Redis for caching and queue management
+  redis:
+    image: redis:7-alpine
+    container_name: data-pipeline-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+
+  # Jupyter Lab for data exploration
+  jupyter:
+    build: .
+    container_name: data-pipeline-jupyter
+    depends_on:
+      - postgres
+    ports:
+      - "8888:8888"
+    environment:
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_NAME=data_warehouse
+      - DB_USER=postgres
+      - DB_PASSWORD=postgres
+    volumes:
+      - ./data:/app/data
+      - ./notebooks:/app/notebooks
+      - ./config:/app/config
+    command: >
+      sh -c "pip install jupyterlab &&
+             jupyter lab --ip=0.0.0.0 --port=8888 --no-browser --allow-root
+             --NotebookApp.token='' --NotebookApp.password=''"
+
+  # MinIO for S3-compatible storage
+  minio:
+    image: minio/minio:latest
+    container_name: data-pipeline-minio
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    environment:
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadmin123
+    volumes:
+      - minio_data:/data
+    command: server /data --console-address ":9001"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 30s
+      timeout: 20s
+      retries: 3
+
+volumes:
+  postgres_data:
+  redis_data:
+  minio_data:

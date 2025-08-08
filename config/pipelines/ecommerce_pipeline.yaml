@@ -1,0 +1,75 @@
+name: "ecommerce_analytics_pipeline"
+description: "Process e-commerce data for analytics and reporting"
+
+source:
+  type: "csv"
+  config:
+    base_path: "./datasets/ecommerce"
+    encoding: "utf-8"
+    delimiter: ","
+
+processing:
+  engine: "pandas"
+  operations:
+    - type: "clean"
+      params:
+        operations: ["remove_empty_rows", "trim_strings", "standardize_phone_numbers"]
+    - type: "transform"
+      params:
+        column_mappings:
+          "customer_id": "customer_id"
+          "registration_date": "registration_date"
+        date_columns: ["registration_date", "order_date", "launch_date"]
+        type_conversions:
+          "price": "float64"
+          "total_amount": "float64"
+          "quantity": "int32"
+    - type: "validate"
+      params:
+        rules:
+          - column: "email"
+            rule: "email_format"
+          - column: "price" 
+            rule: "greater_than"
+            value: 0
+          - column: "customer_segment"
+            rule: "in_list"
+            values: ["Premium", "Standard", "Basic"]
+
+storage:
+  type: "postgresql"
+  destination: "ecommerce_data"
+  mode: "replace"
+  schema: "public"
+
+validation:
+  enabled: true
+  auto_generate_expectations: true
+  suite_name: "ecommerce_validation"
+  expectations:
+    - expectation_type: "expect_column_values_to_not_be_null"
+      column: "customer_id"
+    - expectation_type: "expect_column_values_to_be_unique"
+      column: "customer_id"
+    - expectation_type: "expect_column_values_to_be_in_set"
+      column: "customer_segment"
+      value_set: ["Premium", "Standard", "Basic"]
+
+profiling:
+  enabled: true
+  generate_report: true
+  output_path: "./reports/ecommerce_profile.html"
+  include_correlations: true
+  include_missing_values: true
+
+monitoring:
+  data_quality_checks:
+    - metric: "completeness"
+      threshold: 0.95
+      columns: ["customer_id", "email", "order_id"]
+    - metric: "uniqueness" 
+      threshold: 1.0
+      columns: ["customer_id", "order_id", "product_id"]
+    - metric: "validity"
+      threshold: 0.98
+      columns: ["email", "price", "total_amount"]

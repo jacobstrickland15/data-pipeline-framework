@@ -1,0 +1,128 @@
+name: "real_time_analytics_pipeline"
+description: "Real-time stream processing for IoT sensor data"
+
+source:
+  type: "kafka"
+  config:
+    bootstrap_servers: ["localhost:9092"]
+    topics: ["sensor-data", "device-events"]
+    group_id: "analytics-consumer-group"
+    auto_offset_reset: "latest"
+    max_poll_records: 500
+
+processing:
+  engine: "stream"
+  operations:
+    - type: "transform"
+      params:
+        transformations:
+          - name: "add_timestamp"
+            type: "add_timestamp"
+            field: "processed_at"
+          - name: "parse_sensor_value"
+            type: "calculate_field"
+            new_field: "normalized_value"
+            calculation: "lambda record: record.get('value', 0) / 100.0"
+          - name: "device_category"
+            type: "calculate_field" 
+            new_field: "device_category"
+            calculation: "lambda record: record.get('device_type', '').lower().replace(' ', '_')"
+    
+    - type: "filter"
+      params:
+        filters:
+          - name: "valid_readings"
+            type: "field_not_null"
+            field: "value"
+          - name: "reasonable_range"
+            type: "field_range"
+            field: "value"
+            min_value: -100
+            max_value: 1000
+          - name: "active_devices"
+            type: "field_equals"
+            field: "device_status"
+            value: "active"
+    
+    - type: "windowed_aggregation"
+      params:
+        window_type: "tumbling"
+        window_size: "5m"  # 5 minutes
+        key_field: "device_id"
+        aggregations:
+          - name: "avg_value"
+            function: "avg"
+            field: "value"
+          - name: "count_readings"
+            function: "count"
+          - name: "max_value"
+            function: "max"
+            field: "value"
+          - name: "min_value"
+            function: "min"
+            field: "value"
+
+storage:
+  type: "redis"
+  config:
+    host: "localhost"
+    port: 6379
+    db: 0
+  destinations:
+    - type: "stream"
+      stream_name: "processed_sensor_data"
+      maxlen: 10000
+    - type: "time_series"
+      key_prefix: "sensor_ts"
+      timestamp_field: "timestamp"
+      value_field: "normalized_value"
+    - type: "aggregation_cache"
+      key_prefix: "sensor_agg"
+      expiry_seconds: 300  # 5 minutes
+
+monitoring:
+  metrics:
+    - name: "processing_latency"
+      type: "histogram"
+      description: "Time taken to process each record"
+    - name: "records_processed_total"
+      type: "counter"
+      description: "Total number of records processed"
+    - name: "active_windows"
+      type: "gauge"
+      description: "Number of active processing windows"
+  
+  alerts:
+    - condition: "processing_latency_p95 > 1000"  # milliseconds
+      action: "email"
+      recipients: ["ops@company.com"]
+    - condition: "records_per_second < 10"
+      action: "slack"
+      webhook_url: "${SLACK_WEBHOOK_URL}"
+
+real_time_features:
+  enable_exactly_once_processing: true
+  checkpoint_interval: "30s"
+  max_out_of_order_delay: "5s"
+  watermark_delay: "10s"
+  
+anomaly_detection:
+  enabled: true
+  algorithms:
+    - type: "isolation_forest"
+      contamination: 0.1
+      features: ["value", "normalized_value"]
+    - type: "statistical_outlier"
+      method: "zscore"
+      threshold: 3.0
+      field: "value"
+  
+  actions:
+    - condition: "anomaly_score > 0.8"
+      action: "create_alert"
+      severity: "high"
+    - condition: "anomaly_score > 0.6"
+      action: "flag_record"
+      metadata:
+        source: "anomaly_detection"
+        confidence: "medium"

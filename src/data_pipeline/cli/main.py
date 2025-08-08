@@ -1,4 +1,12 @@
-"""Command-line interface for the data pipeline."""
+"""Main CLI entry point for the data pipeline framework.
+
+This module provides the main command-line interface for the data pipeline framework,
+including subcommands for pipeline operations, queue management, data quality checks,
+lineage tracking, and various utilities.
+
+The CLI is built using Click and provides rich terminal output for better user experience.
+Commands are organized into logical groups for different aspects of data pipeline management.
+"""
 
 import click
 import json
