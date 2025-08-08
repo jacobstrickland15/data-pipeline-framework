@@ -19,7 +19,7 @@ A comprehensive data pipeline framework for large-scale dataset analysis and pro
 
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/data-pipeline.git
+git clone https://github.com/yourusername/data-pipeline-framework.git
 cd data-pipeline
 
 # Create virtual environment
