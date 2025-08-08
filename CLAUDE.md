@@ -45,7 +45,6 @@ This is a comprehensive data pipeline framework for large-scale dataset analysis
 │   │   ├── development.yaml       # Development settings
 │   │   └── production.yaml        # Production settings
 │   └── pipelines/                  # Pipeline configurations
-├── notebooks/                      # Jupyter notebooks
 ├── data/                          # Data directories
 │   ├── raw/                       # Raw input data
 │   ├── processed/                 # Processed data
@@ -60,7 +59,7 @@ This is a comprehensive data pipeline framework for large-scale dataset analysis
 - **Python Version**: 3.9+ (supports 3.9-3.12)
 - **Package Manager**: pip with pyproject.toml
 - **Virtual Environment**: `venv/` directory
-- **IDE**: IntelliJ IDEA (Python module) + Jupyter support
+- **IDE**: IntelliJ IDEA (Python module)
 - **Database**: PostgreSQL (configurable)
 
 ## Common Development Commands

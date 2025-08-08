@@ -12,7 +12,6 @@ A comprehensive data pipeline framework for large-scale dataset analysis and pro
 - **📊 Data Profiling**: Statistical analysis and HTML report generation
 - **⚙️ Configuration**: YAML-based pipeline configuration
 - **🖥️ CLI Interface**: Command-line tools for pipeline and queue management
-- **📓 Jupyter Support**: Interactive notebooks for data exploration
 
 ## 🛠️ Installation
 
@@ -38,7 +37,7 @@ pip install -e .
 pip install -e ".[all]"
 
 # Or install specific feature sets
-pip install -e ".[dev,spark,jupyter]"
+pip install -e ".[dev,spark]"
 ```
 
 ## 🚀 Quick Start
