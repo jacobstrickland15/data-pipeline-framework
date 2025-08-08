@@ -2,20 +2,19 @@
 
 A comprehensive data pipeline framework for large-scale dataset analysis and processing with file queue management. Supports multiple data sources (S3, CSV, JSON), processing engines (Pandas, Spark/PySpark), and PostgreSQL as the target database.
 
-## 🚀 Features
+## Features
 
-- **📂 Multiple Data Sources**: CSV, JSON, JSONL, S3 objects
-- **⚡ Processing Engines**: Pandas for smaller datasets, Spark for big data
-- **🗄️ Database Integration**: PostgreSQL with bulk operations and schema management
-- **📋 File Queue System**: Priority-based file ingestion with status tracking
-- **✅ Data Quality**: Automated validation using Great Expectations
-- **📊 Data Profiling**: Statistical analysis and HTML report generation
-- **⚙️ Configuration**: YAML-based pipeline configuration
-- **🖥️ CLI Interface**: Command-line tools for pipeline and queue management
+- **Multiple Data Sources**: CSV, JSON, JSONL, S3 objects
+- **Processing Engines**: Pandas for smaller datasets, Spark for big data
+- **Database Integration**: PostgreSQL with bulk operations and schema management
+- **File Queue System**: Priority-based file ingestion with status tracking
+- **Data Quality**: Automated validation using Great Expectations
+- **Data Profiling**: Statistical analysis and HTML report generation
+- **Configuration**: YAML-based pipeline configuration
+- **CLI Interface**: Command-line tools for pipeline and queue management
 
-## 🛠️ Installation
+## Installation
 
-### Quick Install
 
 ```bash
 # Clone the repository
@@ -33,7 +32,7 @@ pip install -e ".[all]"
 pip install -e ".[dev, spark]"
 ```
 
-## 🚀 Quick Start
+## Quick Start
 
 ### 1. Initialize a Pipeline
 
@@ -121,7 +120,7 @@ data-pipeline generate analysis --all-tables --language python --output-dir ./an
 3. **Analyze** immediately - no setup friction, no boilerplate
 4. **Iterate** with confidence using proper error handling
 
-## 📋 Queue Management
+## Queue Management
 
 The file queue system allows you to batch process multiple files with priority handling:
 
@@ -160,7 +159,7 @@ python scripts/queue_processor.py --mode batch --max-items 10
 python scripts/queue_processor.py --mode continuous --poll-interval 30
 ```
 
-## ⚙️ Configuration
+## Configuration
 
 ### Pipeline Configuration
 
@@ -221,7 +220,7 @@ AWS_SECRET_ACCESS_KEY=your_secret_key
 AWS_DEFAULT_REGION=us-east-1
 ```
 
-## 🏗️ Architecture
+## Architecture
 
 ### Core Components
 
@@ -251,15 +250,15 @@ src/data_pipeline/
 
 ### Data Flow
 
-1. **📥 Queue**: Files added to priority queue
-2. **📖 Load**: Read data from configured source
-3. **🔄 Transform**: Apply processing operations
-4. **✅ Validate**: Check data quality with Great Expectations
-5. **📊 Profile**: Generate analysis reports (optional)
-6. **💾 Store**: Write to PostgreSQL database
-7. **🗑️ Cleanup**: Remove processed files from queue
+1. **Queue**: Files added to priority queue
+2. **Load**: Read data from configured source
+3. **Transform**: Apply processing operations
+4. **Validate**: Check data quality with Great Expectations
+5. **Profile**: Generate analysis reports (optional)
+6. **Store**: Write to PostgreSQL database
+7. **Cleanup**: Remove processed files from queue
 
-## 🧪 Testing
+## Testing
 
 ```bash
 # Run all tests
@@ -272,7 +271,7 @@ pytest --cov=src/data_pipeline --cov-report=html
 pytest tests/test_queue_manager.py -v
 ```
 
-## 🔧 Development
+## Development
 
 ### Setup Development Environment
 
@@ -312,33 +311,12 @@ make clean        # Clean temporary files
 2. **New Processor**: Inherit from `DataProcessor` base class  
 3. **New Storage Backend**: Inherit from `DataStorage` base class
 
-## 📊 Monitoring & Logging
+## Monitoring & Logging
 
 - Queue processing logs: `logs/queue_processor.log`
 - Pipeline logs: Configurable via logging configuration
 - Queue database: SQLite database storing queue status
 - Great Expectations: Data quality validation reports
-
-## 🤝 Contributing
-
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Make your changes
-4. Add tests for new functionality
-5. Run the test suite (`make test`)
-6. Commit your changes (`git commit -m 'Add amazing feature'`)
-7. Push to the branch (`git push origin feature/amazing-feature`)
-8. Open a Pull Request
-
-## 📄 License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-## 🆘 Support
-
-- 📖 [Documentation](docs/)
-- 🐛 [Issue Tracker](https://github.com/yourusername/data-pipeline/issues)
-- 💬 [Discussions](https://github.com/yourusername/data-pipeline/discussions)
 
 ---
 
