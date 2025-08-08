@@ -1,6 +1,6 @@
 # Data Pipeline Makefile
 
-.PHONY: help install install-dev install-spark setup test lint format clean docker-build docker-run
+.PHONY: help install install-dev install-spark setup test lint format clean docker-build docker-run generate-python-analysis generate-scala-analysis generate-all-analysis
 
 # Default target
 help:
@@ -15,6 +15,9 @@ help:
 	@echo "  clean        - Clean up temporary files"
 	@echo "  docker-build - Build Docker image"
 	@echo "  docker-run   - Run in Docker container"
+	@echo "  generate-python-analysis - Generate Python analysis code"
+	@echo "  generate-scala-analysis - Generate Scala analysis code"
+	@echo "  generate-all-analysis - Generate analysis code for all tables"
 
 # Installation targets
 install:
@@ -84,3 +87,13 @@ profile-sample:
 
 init-pipeline:
 	data-pipeline init --name my_pipeline --source-type csv
+
+# Analysis code generation
+generate-python-analysis:
+	data-pipeline generate analysis sample_table --language python --output analysis_sample.py
+
+generate-scala-analysis:
+	data-pipeline generate analysis sample_table --language scala --output analysis_sample.scala
+
+generate-all-analysis:
+	data-pipeline generate analysis --all-tables --language python --output-dir ./analysis/

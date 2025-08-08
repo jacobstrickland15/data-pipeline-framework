@@ -197,12 +197,12 @@ class PostgreSQLStorage(DataStorage):
                 for row in columns_result:
                     columns.append({
                         'name': row[0],
-                        'type': row[1],
-                        'nullable': row[2] == 'YES',
-                        'default': row[3],
-                        'max_length': row[4],
-                        'precision': row[5],
-                        'scale': row[6]
+                        'data_type': row[1],
+                        'is_nullable': row[2] == 'YES',
+                        'column_default': row[3],
+                        'character_maximum_length': row[4],
+                        'numeric_precision': row[5],
+                        'numeric_scale': row[6]
                     })
                 
                 # Size info
@@ -219,9 +219,11 @@ class PostgreSQLStorage(DataStorage):
                     'has_triggers': table_row[5],
                     'row_security': table_row[6],
                     'columns': columns,
-                    'total_size': size_row[0] if size_row else 'Unknown',
-                    'table_size': size_row[1] if size_row else 'Unknown',
-                    'estimated_rows': size_row[2] if size_row else 0
+                    'size_info': {
+                        'total_size': size_row[0] if size_row else 'Unknown',
+                        'table_size': size_row[1] if size_row else 'Unknown',
+                        'estimated_rows': size_row[2] if size_row else 0
+                    }
                 }
                 
         except Exception as e:

@@ -4,7 +4,7 @@ import click
 import json
 import yaml
 from pathlib import Path
-from typing import Optional
+from typing import Optional, Dict, Any
 import sys
 import os
 
@@ -484,6 +484,342 @@ def process(queue_db: str, config: Optional[str], max_items: Optional[int], verb
     except FileNotFoundError:
         click.echo("Queue processor script not found. Make sure scripts/queue_processor.py exists.", err=True)
         sys.exit(1)
+
+
+@main.group()
+def generate():
+    """Generate analysis code templates for database exploration."""
+    pass
+
+
+@generate.command()
+@click.argument('table_name')
+@click.option('--language', '-l', type=click.Choice(['python', 'scala']), default='python',
+              help='Programming language for the generated code')
+@click.option('--output', '-o', type=click.Path(), help='Output file path')
+@click.option('--config', '-c', type=click.Path(exists=True), 
+              default='config/environments/development.yaml',
+              help='Configuration file to read database settings from')
+@click.option('--all-tables', is_flag=True, help='Generate analysis code for all tables')
+@click.option('--output-dir', type=click.Path(), help='Output directory (for --all-tables)')
+def analysis(table_name: str, language: str, output: Optional[str], 
+            config: str, all_tables: bool, output_dir: Optional[str]):
+    """Generate analysis code template for database tables."""
+    try:
+        from data_pipeline.storage.postgresql_storage import PostgreSQLStorage
+        from data_pipeline.core.config import Config
+        
+        # Load configuration
+        pipeline_config = Config(config)
+        db_config = pipeline_config.get('database', {})
+        
+        # Initialize storage to get table info
+        storage = PostgreSQLStorage(db_config)
+        
+        if all_tables:
+            if not output_dir:
+                output_dir = './analysis'
+            
+            # Create output directory
+            Path(output_dir).mkdir(parents=True, exist_ok=True)
+            
+            # Get all tables
+            tables = storage.list_tables()
+            
+            if not tables:
+                click.echo("No tables found in database")
+                return
+            
+            click.echo(f"Generating analysis code for {len(tables)} tables...")
+            
+            for table in tables:
+                table_info = storage.get_table_info(table)
+                output_file = Path(output_dir) / f"analysis_{table}.{_get_file_extension(language)}"
+                
+                code = _generate_analysis_code(table, table_info, language, db_config)
+                
+                with open(output_file, 'w') as f:
+                    f.write(code)
+                
+                click.echo(f"Generated: {output_file}")
+        
+        else:
+            # Single table
+            table_info = storage.get_table_info(table_name)
+            
+            # Generate output filename if not provided
+            if not output:
+                output = f"analysis_{table_name}.{_get_file_extension(language)}"
+            
+            # Generate code
+            code = _generate_analysis_code(table_name, table_info, language, db_config)
+            
+            # Write to file
+            with open(output, 'w') as f:
+                f.write(code)
+            
+            click.echo(f"Generated analysis code: {output}")
+            click.echo(f"Language: {language.title()}")
+            click.echo(f"Table: {table_name}")
+            click.echo(f"Columns: {len(table_info.get('columns', []))}")
+        
+    except Exception as e:
+        click.echo(f"Error generating analysis code: {str(e)}", err=True)
+        sys.exit(1)
+
+
+def _get_file_extension(language: str) -> str:
+    """Get file extension for language."""
+    return {'python': 'py', 'scala': 'scala'}[language]
+
+
+def _generate_analysis_code(table_name: str, table_info: Dict[str, Any], 
+                          language: str, db_config: Dict[str, Any]) -> str:
+    """Generate analysis code for a table."""
+    if language == 'python':
+        return _generate_python_code(table_name, table_info, db_config)
+    elif language == 'scala':
+        return _generate_scala_code(table_name, table_info, db_config)
+    else:
+        raise ValueError(f"Unsupported language: {language}")
+
+
+def _generate_python_code(table_name: str, table_info: Dict[str, Any], 
+                         db_config: Dict[str, Any]) -> str:
+    """Generate Python analysis code template."""
+    # Extract database connection details
+    host = db_config.get('host', 'localhost')
+    port = db_config.get('port', 5432)
+    database = db_config.get('database', 'data_warehouse')
+    username = db_config.get('username', 'postgres')
+    
+    # Get column information
+    columns = table_info.get('columns', [])
+    column_names = [col['name'] for col in columns] if columns else []
+    column_info_str = '\n'.join([
+        f"#   {col['name']}: {col['data_type']}" + 
+        (f" (nullable: {col['is_nullable']})" if 'is_nullable' in col else "")
+        for col in columns
+    ]) if columns else "#   No column information available"
+    
+    estimated_rows = table_info.get('size_info', {}).get('estimated_rows', 'unknown')
+    
+    template = f"""# Auto-generated analysis starter for table: {table_name}
+# Generated by Data Pipeline Framework
+#
+# Table Information:
+# - Estimated rows: {estimated_rows}
+# - Columns ({len(column_names)}):
+{column_info_str}
+
+import pandas as pd
+from sqlalchemy import create_engine
+import matplotlib.pyplot as plt
+import seaborn as sns
+import os
+
+# Database connection (from your pipeline config)
+# Make sure DB_PASSWORD environment variable is set
+engine = create_engine(
+    f"postgresql://{username}:" + "{os.environ.get('DB_PASSWORD', '')}" +
+    f"@{host}:{port}/{database}"
+)
+
+# Ready-to-use data access functions
+def load_{table_name}(limit=None, where=None, columns=None):
+    \"\"\"Load data from {table_name} table with optional filtering.
+    
+    Args:
+        limit (int): Maximum number of rows to return
+        where (str): SQL WHERE clause (without 'WHERE' keyword)
+        columns (list): List of column names to select
+    
+    Returns:
+        pd.DataFrame: Query results
+    \"\"\"
+    if columns:
+        cols_str = ", ".join([f'"{{col}}"' for col in columns])
+        base_query = f"SELECT {{cols_str}} FROM {table_name}"
+    else:
+        base_query = f"SELECT * FROM {table_name}"
+    
+    if where:
+        base_query += f" WHERE {{where}}"
+    if limit:
+        base_query += f" LIMIT {{limit}}"
+    
+    return pd.read_sql(base_query, engine)
+
+def get_{table_name}_summary():
+    \"\"\"Get basic summary statistics for {table_name} table.\"\"\"
+    query = f"SELECT COUNT(*) as total_rows FROM {table_name}"
+    result = pd.read_sql(query, engine)
+    return result.iloc[0]['total_rows']
+
+# Quick data preview
+try:
+    print(f"=== {table_name.upper()} TABLE ANALYSIS ===")
+    
+    # Get total row count
+    total_rows = get_{table_name}_summary()
+    print(f"Total rows: {{total_rows:,}}")
+    
+    # Load sample data
+    df_sample = load_{table_name}(limit=100)
+    print(f"Sample data shape: {{df_sample.shape}}")
+    print("\\nColumns:", df_sample.columns.tolist())
+    print("\\nData types:")
+    print(df_sample.dtypes)
+    print("\\nFirst 5 rows:")
+    print(df_sample.head())
+    
+    # Basic statistics for numeric columns
+    numeric_cols = df_sample.select_dtypes(include=['number']).columns
+    if len(numeric_cols) > 0:
+        print("\\nNumeric column statistics:")
+        print(df_sample[numeric_cols].describe())
+    
+    print("\\n=== READY FOR ANALYSIS ===")
+    print("# Example usage:")
+    print("# df_full = load_{table_name}()")
+    print("# df_recent = load_{table_name}(where=\\"created_at > '2024-01-01'\\")")
+    print("# df_subset = load_{table_name}(columns=['id', 'name'], limit=1000)")
+    
+except Exception as e:
+    print(f"Error connecting to database: {{e}}")
+    print("Make sure:")
+    print("1. Database is running")
+    print("2. DB_PASSWORD environment variable is set")
+    print("3. Connection details are correct")
+"""
+    
+    return template
+
+
+def _generate_scala_code(table_name: str, table_info: Dict[str, Any], 
+                        db_config: Dict[str, Any]) -> str:
+    """Generate Scala analysis code template."""
+    # Extract database connection details
+    host = db_config.get('host', 'localhost')
+    port = db_config.get('port', 5432)
+    database = db_config.get('database', 'data_warehouse')
+    username = db_config.get('username', 'postgres')
+    
+    # Get column information
+    columns = table_info.get('columns', [])
+    column_names = [col['name'] for col in columns] if columns else []
+    column_info_str = '\n'.join([
+        f"//   {col['name']}: {col['data_type']}" + 
+        (f" (nullable: {col['is_nullable']})" if 'is_nullable' in col else "")
+        for col in columns
+    ]) if columns else "//   No column information available"
+    
+    estimated_rows = table_info.get('size_info', {}).get('estimated_rows', 'unknown')
+    
+    template = f"""// Auto-generated analysis starter for table: {table_name}  
+// Generated by Data Pipeline Framework
+//
+// Table Information:
+// - Estimated rows: {estimated_rows}
+// - Columns ({len(column_names)}):
+{column_info_str}
+
+import org.apache.spark.sql.{{SparkSession, DataFrame}}
+import scala.util.{{Try, Success, Failure}}
+
+object {table_name.title()}Analysis {{
+  
+  // Initialize Spark Session
+  val spark = SparkSession.builder()
+    .appName("{table_name.title()}Analysis")
+    .master("local[*]")
+    .config("spark.sql.adaptive.enabled", "true")
+    .config("spark.sql.adaptive.coalescePartitions.enabled", "true")
+    .config("spark.sql.execution.arrow.pyspark.enabled", "true")
+    .getOrCreate()
+
+  import spark.implicits._
+
+  // Database connection (from your pipeline config)
+  val jdbcUrl = "jdbc:postgresql://{host}:{port}/{database}"
+  val connectionProps = new java.util.Properties()
+  connectionProps.put("user", "{username}")
+  connectionProps.put("password", sys.env.getOrElse("DB_PASSWORD", ""))
+  connectionProps.put("driver", "org.postgresql.Driver")
+
+  // Ready-to-use data access functions
+  def load{table_name.title()}(limit: Option[Int] = None, where: Option[String] = None): Try[DataFrame] = {{
+    Try {{
+      var df = spark.read.jdbc(jdbcUrl, "{table_name}", connectionProps)
+      
+      where.foreach(condition => df = df.where(condition))
+      limit.foreach(n => df = df.limit(n))
+      
+      df
+    }}
+  }}
+
+  def get{table_name.title()}Summary(): Try[Long] = {{
+    Try {{
+      val df = spark.read.jdbc(jdbcUrl, "{table_name}", connectionProps)
+      df.count()
+    }}
+  }}
+
+  // Analysis execution
+  def runAnalysis(): Unit = {{
+    println(s"=== {table_name.upper()} TABLE ANALYSIS ===")
+    
+    // Get total row count
+    get{table_name.title()}Summary() match {{
+      case Success(totalRows) => 
+        println(s"Total rows: ${{totalRows.toString.reverse.grouped(3).mkString(",").reverse}}")
+      case Failure(e) => 
+        println(s"Error getting row count: ${{e.getMessage}}")
+        return
+    }}
+    
+    // Load sample data
+    load{table_name.title()}(Some(100)) match {{
+      case Success(dfSample) =>
+        println(s"Sample data shape: (${{dfSample.count()}} rows, ${{dfSample.columns.length}} columns)")
+        println("\\nColumns: " + dfSample.columns.mkString(", "))
+        println("\\nSchema:")
+        dfSample.printSchema()
+        println("\\nFirst 5 rows:")
+        dfSample.show(5)
+        
+        // Basic statistics for numeric columns
+        val numericCols = dfSample.dtypes.filter(_._2.matches(".*int.*|.*double.*|.*float.*|.*decimal.*")).map(_._1)
+        if (numericCols.nonEmpty) {{
+          println("\\nNumeric column statistics:")
+          dfSample.select(numericCols.head, numericCols.tail: _*).describe().show()
+        }}
+        
+        println("\\n=== READY FOR ANALYSIS ===")
+        println("// Example usage:")
+        println("// val dfFull = load{table_name.title()}().get")
+        println("// val dfRecent = load{table_name.title()}(where = Some(\\"created_at > '2024-01-01'\\")).get")
+        println("// val dfLimited = load{table_name.title()}(limit = Some(1000)).get")
+        
+      case Failure(e) =>
+        println(s"Error connecting to database: ${{e.getMessage}}")
+        println("Make sure:")
+        println("1. Database is running")
+        println("2. DB_PASSWORD environment variable is set") 
+        println("3. Connection details are correct")
+        println("4. PostgreSQL JDBC driver is in classpath")
+    }}
+  }}
+
+  def main(args: Array[String]): Unit = {{
+    runAnalysis()
+    spark.stop()
+  }}
+}}
+"""
+    
+    return template
 
 
 if __name__ == '__main__':

@@ -3,9 +3,25 @@
 from typing import Dict, Any, List, Optional, Union
 import pandas as pd
 import great_expectations as gx
-from great_expectations.core import ExpectationSuite, ExpectationConfiguration
-from great_expectations.data_context import BaseDataContext
-from great_expectations.checkpoint import SimpleCheckpoint
+try:
+    from great_expectations.data_context import BaseDataContext
+    from great_expectations.core import ExpectationSuite, ExpectationConfiguration
+    from great_expectations.checkpoint import SimpleCheckpoint
+except ImportError:
+    # Handle newer versions of Great Expectations with different API
+    try:
+        from great_expectations.data_context import FileDataContext as BaseDataContext
+    except ImportError:
+        from great_expectations.data_context import DataContext as BaseDataContext
+    try:
+        from great_expectations import ExpectationSuite
+        from great_expectations.core.expectation_configuration import ExpectationConfiguration
+        from great_expectations.checkpoint import SimpleCheckpoint
+    except ImportError:
+        # Fallback for very different API versions
+        ExpectationSuite = None
+        ExpectationConfiguration = None
+        SimpleCheckpoint = None
 import logging
 import json
 from pathlib import Path

@@ -88,6 +88,46 @@ data-pipeline run config/pipelines/my_pipeline.yaml
 data-pipeline profile data/sample.csv --format html
 ```
 
+## 🔬 Generate Analysis Code
+
+Generate ready-to-use Python or Scala code for analyzing your database tables:
+
+### Generate Analysis Templates
+
+```bash
+# Generate Python analysis code for a specific table
+data-pipeline generate analysis users --language python --output analysis_users.py
+
+# Generate Scala analysis code  
+data-pipeline generate analysis orders --language scala --output analysis_orders.scala
+
+# Generate analysis code for all tables
+data-pipeline generate analysis --all-tables --language python --output-dir ./analysis/
+```
+
+### What You Get
+
+**Python Template Features:**
+- Database connection using your pipeline configuration
+- Ready-to-use data loading functions with filtering options
+- Sample data preview and basic statistics
+- Error handling and connection troubleshooting
+- Best practices for pandas-based analysis
+
+**Scala Template Features:**
+- Spark session initialization with optimal settings
+- JDBC connection to your PostgreSQL database
+- Type-safe data loading with error handling
+- Schema introspection and data preview
+- Production-ready Spark configuration
+
+### Developer Workflow
+
+1. **Explore** your data using IntelliJ DataGrip integration
+2. **Generate** analysis starter code with one CLI command
+3. **Analyze** immediately - no setup friction, no boilerplate
+4. **Iterate** with confidence using proper error handling
+
 ## 📋 Queue Management
 
 The file queue system allows you to batch process multiple files with priority handling:
