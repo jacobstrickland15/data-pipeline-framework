@@ -1,0 +1,64 @@
+# Base configuration for data pipeline
+name: "data-pipeline-base"
+
+# Logging configuration
+logging:
+  level: INFO
+  format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+  handlers:
+    console: true
+    file: false
+
+# Database configuration template
+database:
+  type: postgresql
+  host: ${DB_HOST:localhost}
+  port: ${DB_PORT:5432}
+  database: ${DB_NAME:data_warehouse}
+  username: ${DB_USER:postgres}
+  password: ${DB_PASSWORD}
+  pool_size: 10
+  max_overflow: 20
+  echo: false
+
+# Storage configuration
+storage:
+  local:
+    base_path: "./data"
+    raw_data: "raw"
+    processed_data: "processed"
+    external_data: "external"
+  
+  s3:
+    bucket: ${S3_BUCKET}
+    region: ${AWS_REGION:us-east-1}
+    prefix: "data-pipeline"
+    access_key_id: ${AWS_ACCESS_KEY_ID}
+    secret_access_key: ${AWS_SECRET_ACCESS_KEY}
+
+# Processing configuration
+processing:
+  default_engine: "pandas"
+  batch_size: 10000
+  memory_limit_gb: 8
+  
+  spark:
+    app_name: "data-pipeline-spark"
+    master: "local[*]"
+    config:
+      "spark.sql.adaptive.enabled": "true"
+      "spark.sql.adaptive.coalescePartitions.enabled": "true"
+      "spark.sql.execution.arrow.pyspark.enabled": "true"
+      "spark.serializer": "org.apache.spark.serializer.KryoSerializer"
+
+# Data validation
+validation:
+  enabled: true
+  store_results: true
+  fail_on_error: false
+
+# Monitoring and metrics
+monitoring:
+  enabled: true
+  metrics_backend: "prometheus"
+  health_check_interval: 30

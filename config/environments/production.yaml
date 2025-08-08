@@ -1,0 +1,39 @@
+# Production environment configuration
+extends: base.yaml
+
+name: "data-pipeline-prod"
+
+logging:
+  level: INFO
+  handlers:
+    console: false
+    file: true
+    file_path: "/var/log/data-pipeline/production.log"
+    structured: true
+
+database:
+  pool_size: 20
+  max_overflow: 40
+  echo: false
+
+storage:
+  primary: "s3"
+  
+processing:
+  memory_limit_gb: 16
+  spark:
+    master: "spark://spark-master:7077"
+    config:
+      "spark.sql.adaptive.enabled": "true"
+      "spark.sql.adaptive.coalescePartitions.enabled": "true"
+      "spark.driver.memory": "4g"
+      "spark.executor.memory": "8g"
+      "spark.executor.instances": "4"
+
+validation:
+  fail_on_error: true
+  store_results: true
+
+monitoring:
+  enabled: true
+  health_check_interval: 15

@@ -1,0 +1,138 @@
+# Sample pipeline configuration for S3 JSON data processing
+name: "s3_json_pipeline"
+description: "Process JSON files from S3 and load into PostgreSQL with Spark"
+
+# Data source configuration
+source:
+  type: "s3"
+  config:
+    bucket: "my-data-bucket"
+    region: "us-east-1" 
+    prefix: "raw-data/logs"
+    # AWS credentials will be loaded from environment or IAM roles
+  
+# Source file specification
+input:
+  file_pattern: "application_logs_*.json"
+  format: "json"  # or "jsonl" for line-delimited JSON
+  
+# Data processing configuration
+processing:
+  engine: "spark"  # Use Spark for large-scale processing
+  operations:
+    - type: "select"
+      params:
+        columns: 
+          - "timestamp"
+          - "user_id" 
+          - "event_type"
+          - "session_id"
+          - "properties"
+    
+    - type: "transform"
+      params:
+        transformations:
+          timestamp:
+            type: "cast"
+            params:
+              dtype: "timestamp"
+          
+          # Extract nested properties
+          country:
+            type: "calculate"
+            params:
+              expression: "properties.location.country"
+          
+          device_type:
+            type: "calculate" 
+            params:
+              expression: "properties.device.type"
+          
+          # Create derived columns
+          hour_of_day:
+            type: "calculate"
+            params:
+              expression: "hour(timestamp)"
+          
+          is_weekend:
+            type: "calculate"
+            params:
+              expression: "dayofweek(timestamp) in (1, 7)"
+    
+    - type: "filter"
+      params:
+        condition: "event_type in ('page_view', 'button_click', 'purchase') and user_id is not null"
+    
+    - type: "window"
+      params:
+        window_spec:
+          partition_by: ["user_id"]
+          order_by: ["timestamp"]
+        functions:
+          - type: "row_number"
+            alias: "event_sequence"
+          - type: "lag" 
+            column: "timestamp"
+            offset: 1
+            alias: "previous_event_time"
+    
+    - type: "aggregate"
+      params:
+        group_by: ["user_id", "event_type", "country", "device_type"]
+        aggregations:
+          event_sequence: ["count", "max"]
+          timestamp: ["min", "max"]
+
+# Data validation
+validation:
+  enabled: true
+  suite_name: "application_logs_validation"
+  custom_expectations:
+    - expectation_type: "expect_column_values_to_not_be_null"
+      kwargs:
+        column: "user_id"
+    
+    - expectation_type: "expect_column_values_to_be_in_set"
+      kwargs:
+        column: "event_type"
+        value_set: ["page_view", "button_click", "purchase", "login", "logout"]
+    
+    - expectation_type: "expect_column_values_to_be_between"
+      kwargs:
+        column: "hour_of_day"
+        min_value: 0
+        max_value: 23
+
+# Storage configuration
+storage:
+  type: "postgresql"
+  destination: "analytics.user_events_summary"
+  mode: "append"
+  batch_size: 50000
+  
+# Schema management
+schema:
+  auto_infer: true
+  create_table_if_not_exists: true
+  add_metadata_columns: true  # Adds processing_timestamp, source_file columns
+  
+# Data profiling
+profiling:
+  enabled: true
+  sample_size: 100000  # Sample for large datasets
+  generate_report: true
+  output_path: "./reports/s3_logs_profile.html"
+
+# Performance optimization
+performance:
+  spark_config:
+    "spark.sql.adaptive.enabled": "true"
+    "spark.sql.adaptive.coalescePartitions.enabled": "true"
+    "spark.sql.execution.arrow.pyspark.enabled": "true"
+  
+  partitioning:
+    enabled: true
+    columns: ["country", "device_type"]
+    
+  caching:
+    intermediate_results: true
